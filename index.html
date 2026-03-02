@@ -294,26 +294,26 @@
 
         // --- AUTH & ADMIN ---
         async function processAuth() {
-    const email = document.getElementById('auth_user').value.trim();
-    const pass = document.getElementById('auth_pass').value.trim();
+    const u = document.getElementById('auth_user').value.trim();
+    const p = document.getElementById('auth_pass').value.trim();
 
-    try {
-        // Isso faz o login oficial no Firebase e gera a "chave" de acesso
-        const userCredential = await firebase.auth().signInWithEmailAndPassword(email, pass);
-        state.currentUser = userCredential.user;
+    // Busca o usuário na sua lista do Firebase
+    const snapshot = await db.collection("users")
+        .where("user", "==", u)
+        .where("pass", "==", p)
+        .get();
+
+    if (!snapshot.empty) {
+        const userData = snapshot.docs[0].data();
+        state.currentUser = { user: userData.user, role: userData.role };
         
-        // Salva a sessão no navegador
-        localStorage.setItem('ccb_user_session', JSON.stringify({
-            uid: state.currentUser.uid,
-            email: state.currentUser.email,
-            role: 'admin' // Como só você terá esse e-mail, você é o admin
-        }));
-
-        alert("Login realizado com sucesso!");
+        // Salva na memória do navegador para você continuar logado
+        localStorage.setItem('ccb_user_session', JSON.stringify(state.currentUser));
+        
+        alert("Bem-vindo, " + u + "!");
         location.reload();
-    } catch (error) {
-        console.error(error);
-        alert("Erro no login: Verifique seu e-mail e senha cadastrados no Firebase Auth.");
+    } else {
+        alert("Usuário ou senha incorretos.");
     }
 }
 
@@ -429,4 +429,5 @@
     </script>
 </body>
 </html>
+
 
