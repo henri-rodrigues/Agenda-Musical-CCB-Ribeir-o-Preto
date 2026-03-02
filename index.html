@@ -165,12 +165,17 @@
                     <textarea id="f_obs" class="search-input" placeholder="Observações" rows="2"></textarea>
                 </div>
                 <div id="fields-ministry" class="hidden">
-                    <input type="text" id="f_m_nome" class="search-input" placeholder="Nome Completo">
-                    <input type="text" id="f_m_cargo" class="search-input" placeholder="Ministério">
-                    <input type="text" id="f_m_igreja" class="search-input" placeholder="Igreja Comum">
-                    <input type="text" id="f_m_cidade" class="search-input" placeholder="Cidade">
-                    <input type="text" id="f_m_tel" class="search-input" placeholder="WhatsApp">
-                </div>
+    <div class="form-group">
+        <label>Foto do Músico (Opcional)</label>
+        <input type="file" id="f_m_file" class="search-input" accept="image/*" onchange="previewImage(this)">
+        <input type="hidden" id="f_m_photo"> <img id="img_preview" src="" style="width: 60px; height: 60px; border-radius: 50%; display: none; margin: 0 auto 10px auto; object-fit: cover; border: 2px solid var(--p-accent);">
+    </div>
+    <div class="form-group"><label>Nome Completo</label><input type="text" id="f_m_nome" class="search-input"></div>
+    <div class="form-group"><label>Ministério</label><input type="text" id="f_m_cargo" class="search-input"></div>
+    <div class="form-group"><label>Igreja Comum</label><input type="text" id="f_m_igreja" class="search-input"></div>
+    <div class="form-group"><label>Cidade</label><input type="text" id="f_m_cidade" class="search-input"></div>
+    <div class="form-group"><label>Telefone WhatsApp</label><input type="text" id="f_m_tel" class="search-input"></div>
+</div>
                 <div style="display: flex; gap: 12px; margin-top: 1rem;">
                     <button type="button" class="btn-ui btn-primary" style="flex: 2" onclick="saveData()">Confirmar</button>
                     <button type="button" class="btn-ui" style="flex: 1; background: #eee" onclick="closeModal()">Sair</button>
@@ -367,6 +372,24 @@
 
         function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; document.getElementById('mainForm').reset(); editingId = null; }
 
+        // Função para transformar a imagem em texto (Base64) e mostrar um preview
+function previewImage(input) {
+    const preview = document.getElementById('img_preview');
+    const storageField = document.getElementById('f_m_photo');
+    
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+            storageField.value = e.target.result; // Salva o texto da imagem aqui
+        }
+        
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
         async function saveData() {
             const collection = activeModalType === 'event' ? "events" : "ministries";
             const data = activeModalType === 'event' ? {
@@ -375,8 +398,12 @@
                 horarioEnsaio: document.getElementById('f_hora').value, tipoEvento: document.getElementById('f_tipo').value,
                 endereco: document.getElementById('f_end').value, obs: document.getElementById('f_obs').value
             } : {
-                nome: document.getElementById('f_m_nome').value, cargo: document.getElementById('f_m_cargo').value,
-                igreja: document.getElementById('f_m_igreja').value, cidade: document.getElementById('f_m_cidade').value, tel: document.getElementById('f_m_tel').value
+                nome: document.getElementById('f_m_nome').value,
+    cargo: document.getElementById('f_m_cargo').value,
+    igreja: document.getElementById('f_m_igreja').value,
+    cidade: document.getElementById('f_m_cidade').value,
+    tel: document.getElementById('f_m_tel').value,
+    photo: document.getElementById('f_m_photo').value || ""
             };
 
             if(editingId) await db.collection(collection).doc(editingId).update(data);
@@ -429,5 +456,6 @@
     </script>
 </body>
 </html>
+
 
 
