@@ -293,15 +293,29 @@
         }
 
         // --- AUTH & ADMIN ---
-        function processAuth() {
-            const u = document.getElementById('auth_user').value.trim();
-            const p = document.getElementById('auth_pass').value.trim();
-            const user = state.users.find(x => x.user === u && x.pass === p);
-            if(user) {
-                localStorage.setItem('ccb_user_session', JSON.stringify(user));
-                location.reload();
-            } else alert("Inválido");
-        }
+        async function processAuth() {
+    const email = document.getElementById('auth_user').value.trim();
+    const pass = document.getElementById('auth_pass').value.trim();
+
+    try {
+        // Isso faz o login oficial no Firebase e gera a "chave" de acesso
+        const userCredential = await firebase.auth().signInWithEmailAndPassword(email, pass);
+        state.currentUser = userCredential.user;
+        
+        // Salva a sessão no navegador
+        localStorage.setItem('ccb_user_session', JSON.stringify({
+            uid: state.currentUser.uid,
+            email: state.currentUser.email,
+            role: 'admin' // Como só você terá esse e-mail, você é o admin
+        }));
+
+        alert("Login realizado com sucesso!");
+        location.reload();
+    } catch (error) {
+        console.error(error);
+        alert("Erro no login: Verifique seu e-mail e senha cadastrados no Firebase Auth.");
+    }
+}
 
         async function adminCreateUser() {
             const u = document.getElementById('reg_user').value.trim();
@@ -415,3 +429,4 @@
     </script>
 </body>
 </html>
+
