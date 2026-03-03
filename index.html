@@ -5,9 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sistema Musical CCB</title>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700&display=swap"
-        rel="stylesheet">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/3/3e/Logo_oficial_CCB.png">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -25,332 +29,72 @@
             --transition: all 0.3s ease;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background: var(--p-bg); color: var(--p-text); min-height: 100vh; overflow-x: hidden; }
+
+        /* Sidebar */
+        #sidebar { position: fixed; left: -280px; top: 0; width: 280px; height: 100%; background: var(--p-dark); color: white; z-index: 1001; transition: var(--transition); padding: 2rem 1.5rem; box-shadow: 10px 0 30px rgba(0, 0, 0, 0.2); }
+        #sidebar.active { left: 0; }
+        #sidebar h2 { font-family: 'Poppins'; margin-bottom: 2rem; color: var(--p-accent); border-bottom: 1px solid #1e293b; padding-bottom: 1rem; }
+        .nav-link { display: block; color: #cbd5e1; text-decoration: none; padding: 12px; border-radius: 8px; margin-bottom: 8px; transition: 0.2s; cursor: pointer; }
+        .nav-link:hover { background: #1e293b; color: white; }
+        .overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); display: none; z-index: 1000; backdrop-filter: blur(2px); }
+
+        /* Header */
+        header { background: var(--p-white); padding: 2rem 1rem; border-bottom: 1px solid var(--p-border); display: flex; flex-direction: column; align-items: center; gap: 1rem; position: relative; }
+        .menu-btn { position: absolute; left: 1.5rem; top: 2rem; background: none; border: none; cursor: pointer; color: var(--p-dark); }
+        .logo-header { width: 70px; height: auto; }
+        .header-content { text-align: center; }
+        .header-content h1 { font-family: 'Poppins'; font-size: 1.5rem; color: var(--p-dark); margin-bottom: 0.2rem; }
+
+        /* Responsividade do Título */
+        @media (max-width: 480px) {
+            .header-content h1 { font-size: 1.1rem; }
+            header { padding: 1.5rem 1rem; }
+            .logo-header { width: 50px; }
         }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--p-bg);
-            color: var(--p-text);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
+        .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
+        .filter-box { background: white; padding: 1.5rem; border-radius: 15px; border: 1px solid var(--p-border); margin-bottom: 2rem; box-shadow: var(--shadow); }
+        .search-input { width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid var(--p-border); margin-bottom: 1rem; font-size: 0.95rem; font-family: inherit; }
+        .select-ui { width: 100%; padding: 11px; border-radius: 10px; border: 1px solid var(--p-border); background: #fdfdfd; font-size: 0.9rem; color: var(--p-text); cursor: pointer; }
 
-        /* --- UI COMPONENTS --- */
-        #sidebar {
-            position: fixed;
-            left: -280px;
-            top: 0;
-            width: 280px;
-            height: 100%;
-            background: var(--p-dark);
-            color: white;
-            z-index: 1001;
-            transition: var(--transition);
-            padding: 2rem 1.5rem;
-            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.2);
-        }
+        .segmented-control { display: flex; background: #f1f5f9; padding: 4px; border-radius: 10px; margin-top: 1rem; }
+        .seg-btn { flex: 1; border: none; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 600; color: var(--p-text-light); transition: 0.2s; }
+        .seg-btn.active { background: var(--p-white); color: var(--p-dark); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
 
-        #sidebar.active {
-            left: 0;
-        }
+        /* Cards e Grid */
+        .card-grid { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); grid-auto-rows: 1fr; }
+        
+        .card-event { background: white; padding: 1.5rem; border-radius: 15px; border: 1px solid var(--p-border); border-top: 5px solid var(--p-dark); display: flex; flex-direction: column; justify-content: space-between; min-height: 280px; }
+        .card-event.especial { border-top-color: var(--p-accent); }
+        
+        .card-min { background: white; border-radius: 15px; padding: 2rem 1.5rem; text-align: center; border: 1px solid var(--p-border); box-shadow: var(--shadow); display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
+        .min-photo { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--p-accent); margin-bottom: 1rem; object-fit: cover; }
 
-        #sidebar h2 {
-            font-family: 'Poppins';
-            margin-bottom: 2rem;
-            color: var(--p-accent);
-            border-bottom: 1px solid #1e293b;
-            padding-bottom: 1rem;
-        }
+        .obs-container { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--p-border); font-size: 0.8rem; font-style: italic; color: var(--p-text-light); }
 
-        .nav-link {
-            display: block;
-            color: #cbd5e1;
-            text-decoration: none;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            transition: 0.2s;
-            cursor: pointer;
-        }
+        /* Botões */
+        .card-actions { margin-top: auto; padding-top: 15px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+        .btn-card { padding: 8px; border-radius: 6px; text-decoration: none; text-align: center; font-size: 0.7rem; font-weight: 700; color: white; display: flex; align-items: center; justify-content: center; }
+        .bg-maps { background: #4285F4; }
+        .bg-waze { background: #007291; color: #ffffff; font-weight: 800; }
+        .bg-share { background: var(--p-dark); cursor: pointer; border: none; }
 
-        .nav-link:hover {
-            background: #1e293b;
-            color: white;
-        }
+        /* Modais e Admin */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem; }
+        .modal { background: white; padding: 2rem; border-radius: 20px; width: 100%; max-width: 550px; max-height: 90vh; overflow-y: auto; }
+        .btn-ui { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 0.85rem; }
+        .btn-primary { background: var(--p-dark); color: white; }
 
-        .overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.4);
-            display: none;
-            z-index: 1000;
-            backdrop-filter: blur(2px);
-        }
-
-        header {
-            background: var(--p-white);
-            padding: 2rem 1rem;
-            border-bottom: 1px solid var(--p-border);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-            position: relative;
-        }
-
-        .menu-btn {
-            position: absolute;
-            left: 1.5rem;
-            top: 2rem;
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: var(--p-dark);
-        }
-
-        .logo-header {
-            width: 70px;
-            height: auto;
-        }
-
-        .header-content {
-            text-align: center;
-        }
-
-        .header-content h1 {
-            font-family: 'Poppins';
-            font-size: 1.5rem;
-            color: var(--p-dark);
-            margin-bottom: 0.2rem;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem 1.5rem;
-        }
-
-        .filter-box {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 15px;
-            border: 1px solid var(--p-border);
-            margin-bottom: 2rem;
-            box-shadow: var(--shadow);
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 12px 16px;
-            border-radius: 10px;
-            border: 1px solid var(--p-border);
-            margin-bottom: 1rem;
-            font-size: 0.95rem;
-            font-family: inherit;
-        }
-
-        .select-ui {
-            width: 100%;
-            padding: 11px;
-            border-radius: 10px;
-            border: 1px solid var(--p-border);
-            background: #fdfdfd;
-            font-size: 0.9rem;
-            color: var(--p-text);
-            cursor: pointer;
-        }
-
-        .segmented-control {
-            display: flex;
-            background: #f1f5f9;
-            padding: 4px;
-            border-radius: 10px;
-            margin-top: 1rem;
-        }
-
-        .seg-btn {
-            flex: 1;
-            border: none;
-            padding: 8px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--p-text-light);
-            transition: 0.2s;
-        }
-
-        .seg-btn.active {
-            background: var(--p-white);
-            color: var(--p-dark);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .card-grid {
-            display: grid;
-            gap: 1.5rem;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            grid-auto-rows: 1fr;
-            /* ADICIONE ESTA LINHA */
-        }
-
-        .card-event {
-            background: white;
-            background: white;
-            padding: 1.5rem;
-            border-radius: 15px;
-            border: 1px solid var(--p-border);
-            border-top: 5px solid var(--p-dark);
-            display: flex;
-            /* Novo */
-            flex-direction: column;
-            /* Novo */
-            justify-content: space-between;
-            /* Novo: Empurra o conteúdo */
-            min-height: 280px;
-            /* Garante altura mínima padrão */
-        }
-
-        .card-event.especial {
-            border-top-color: var(--p-accent);
-        }
-
-        .obs-container {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px dashed var(--p-border);
-            font-size: 0.8rem;
-            font-style: italic;
-            color: var(--p-text-light);
-        }
-
-        .card-min {
-            background: white;
-            border-radius: 15px;
-            padding: 2rem 1.5rem;
-            text-align: center;
-            border: 1px solid var(--p-border);
-            box-shadow: var(--shadow);
-        }
-
-        .min-photo {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            border: 3px solid var(--p-accent);
-            margin-bottom: 1rem;
-            object-fit: cover;
-        }
-
-        .card-actions {
-            margin-top: auto;
-            /* Truque: Empurra os botões para baixo */
-            padding-top: 15px;
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 8px;
-        }
-
-        .btn-card {
-            padding: 8px;
-            border-radius: 6px;
-            text-decoration: none;
-            text-align: center;
-            font-size: 0.7rem;
-            font-weight: 700;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .bg-maps {
-            background: #4285F4;
-        }
-
-        .bg-waze {
-            background: #33d1ff;
-            color: #000;
-        }
-
-        .bg-whatsapp {
-            background: #25D366;
-        }
-
-        .bg-share {
-            background: var(--p-dark);
-            cursor: pointer;
-            border: none;
-        }
-
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.6);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            padding: 1rem;
-        }
-
-        .modal {
-            background: white;
-            padding: 2rem;
-            border-radius: 20px;
-            width: 100%;
-            max-width: 550px;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .btn-ui {
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-
-        .btn-primary {
-            background: var(--p-dark);
-            color: white;
-        }
-
-        .view-section {
-            display: none;
-        }
-
-        .view-section.active {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        .hidden {
-            display: none !important;
-        }
+        .view-section { display: none; }
+        .view-section.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .hidden { display: none !important; }
     </style>
 </head>
 
 <body>
-
     <div class="overlay" id="overlay" onclick="toggleSidebar(false)"></div>
 
     <nav id="sidebar">
@@ -365,13 +109,10 @@
     <header>
         <button class="menu-btn" onclick="toggleSidebar(true)">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <line x1="3" y1="12" x2="21" y2="12"></line>
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <line x1="3" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>
             </svg>
         </button>
-        <img src="https://upload.wikimedia.org/wikipedia/commons/3/3e/Logo_oficial_CCB.png" class="logo-header"
-            alt="CCB Logo">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/3/3e/Logo_oficial_CCB.png" class="logo-header" alt="CCB Logo">
         <div class="header-content">
             <h1 id="pageTitle">Agenda Musical - Ribeirão Preto e Micro Região</h1>
             <p>Congregação Cristã no Brasil</p>
@@ -380,20 +121,14 @@
 
     <main class="container">
         <section id="view-events" class="view-section active">
-            <div id="adminEventBtn" class="hidden"
-                style="display: flex; justify-content: center; margin-bottom: 1.5rem;">
+            <div id="adminEventBtn" class="hidden" style="display: flex; justify-content: center; margin-bottom: 1.5rem;">
                 <button class="btn-ui btn-primary" onclick="openModal('event')">+ Novo Evento</button>
             </div>
             <div class="filter-box">
-                <input type="text" id="searchEvents" class="search-input"
-                    placeholder="🔍 Pesquisar por título ou igreja...">
+                <input type="text" id="searchEvents" class="search-input" placeholder="🔍 Pesquisar por título ou igreja...">
                 <div class="filters-row">
-                    <select id="filterCidadeEvent" class="select-ui">
-                        <option value="">📍 Selecionar Cidade (Obrigatório)</option>
-                    </select>
-                    <select id="filterDiaEvent" class="select-ui">
-                        <option value="">📅 Todos os Dias</option>
-                    </select>
+                    <select id="filterCidadeEvent" class="select-ui"><option value="">📍 Selecionar Cidade</option></select>
+                    <select id="filterDiaEvent" class="select-ui"><option value="">📅 Todos os Dias</option></select>
                 </div>
                 <div class="segmented-control">
                     <button class="seg-btn active" onclick="setFilterType('all', this)">Todos</button>
@@ -402,8 +137,7 @@
                 </div>
             </div>
             <div id="eventGrid" class="card-grid"></div>
-            <div id="eventEmptyMsg" style="text-align: center; padding: 4rem 1rem; color: var(--p-text-light);">
-                Selecione uma cidade.</div>
+            <div id="eventEmptyMsg" style="text-align: center; padding: 4rem 1rem; color: var(--p-text-light);">Selecione uma cidade.</div>
         </section>
 
         <section id="view-ministries" class="view-section">
@@ -412,16 +146,13 @@
             </div>
             <div class="filter-box">
                 <input type="text" id="searchMin" class="search-input" placeholder="🔍 Pesquisar por nome ou cargo...">
-                <select id="filterCidadeMin" class="select-ui">
-                    <option value="">📍 Filtrar por Cidade (Todas)</option>
-                </select>
+                <select id="filterCidadeMin" class="select-ui"><option value="">📍 Filtrar por Cidade (Todas)</option></select>
             </div>
             <div id="minGrid" class="card-grid"></div>
         </section>
 
         <section id="view-login" class="view-section">
-            <div
-                style="max-width: 400px; margin: 0 auto; background: white; padding: 2.5rem; border-radius: 20px; box-shadow: var(--shadow); border: 1px solid var(--p-border);">
+            <div style="max-width: 400px; margin: 0 auto; background: white; padding: 2.5rem; border-radius: 20px; box-shadow: var(--shadow); border: 1px solid var(--p-border);">
                 <h3 style="margin-bottom: 1.5rem; text-align: center;">Acesso ao Sistema</h3>
                 <input type="text" id="auth_user" class="search-input" placeholder="Usuário">
                 <input type="password" id="auth_pass" class="search-input" placeholder="Senha">
@@ -444,9 +175,7 @@
             </div>
             <div class="filter-box">
                 <h3>📜 Logs de Acessos Recentes</h3>
-                <div id="logTable" style="margin-top:10px; max-height: 300px; overflow-y: auto; font-size: 0.8rem;">
-                    Carregando logs...
-                </div>
+                <div id="logTable" style="margin-top:10px; max-height: 300px; overflow-y: auto; font-size: 0.8rem;"></div>
             </div>
         </section>
     </main>
@@ -459,7 +188,6 @@
                     <input type="text" id="f_titulo" class="search-input" placeholder="Título do Evento *">
                     <input type="text" id="f_igreja" class="search-input" placeholder="Igreja *">
                     <input type="text" id="f_cidade" class="search-input" placeholder="Cidade/Estado *">
-
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
                         <select id="f_tipo" class="select-ui" onchange="toggleDateInput()">
                             <option value="recorrente">Ensaio Local</option>
@@ -467,11 +195,9 @@
                         </select>
                         <div id="date-container">
                             <select id="f_dia" class="select-ui"></select>
-                            <input type="date" id="f_data_especifica" class="search-input hidden"
-                                style="margin-bottom:0">
+                            <input type="date" id="f_data_especifica" class="search-input hidden" style="margin-bottom:0">
                         </div>
                     </div>
-
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                         <input type="time" id="f_hora" class="search-input" value="19:30">
                         <input type="text" id="f_end" class="search-input" placeholder="Endereço">
@@ -480,12 +206,9 @@
                 </div>
 
                 <div id="fields-ministry" class="hidden">
-                    <div class="form-group" style="margin-bottom: 15px; text-align: center;">
-                        <label style="display:block; font-size:0.8rem; margin-bottom:5px">Foto do Músico</label>
-                        <img id="img_preview" src=""
-                            style="width: 80px; height: 80px; border-radius: 50%; display: none; margin: 0 auto 10px auto; object-fit: cover; border: 2px solid var(--p-accent);">
-                        <input type="file" id="f_m_file" class="search-input" accept="image/*"
-                            onchange="previewImage(this)">
+                    <div style="text-align: center; margin-bottom:15px">
+                        <img id="img_preview" style="width: 80px; height: 80px; border-radius: 50%; display: none; margin: 0 auto 10px auto; object-fit: cover; border: 2px solid var(--p-accent);">
+                        <input type="file" id="f_m_file" class="search-input" accept="image/*" onchange="previewImage(this)">
                         <input type="hidden" id="f_m_photo">
                     </div>
                     <input type="text" id="f_m_nome" class="search-input" placeholder="Nome Completo">
@@ -496,31 +219,14 @@
                 </div>
 
                 <div style="display: flex; gap: 12px; margin-top: 1rem;">
-                    <button type="button" class="btn-ui btn-primary" style="flex: 2"
-                        onclick="saveData()">Confirmar</button>
-                    <button type="button" class="btn-ui" style="flex: 1; background: #eee"
-                        onclick="closeModal()">Sair</button>
+                    <button type="button" class="btn-ui btn-primary" style="flex: 2" onclick="saveData()">Confirmar</button>
+                    <button type="button" class="btn-ui" style="flex: 1; background: #eee" onclick="closeModal()">Sair</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-        // Função para registrar o log
-        async function registrarLog(usuario) {
-            try {
-                await db.collection("access_logs").add({
-                    usuario: usuario,
-                    dataHora: new Date().toLocaleString("pt-BR"),
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    dispositivo: navigator.userAgent.toLowerCase().includes('mobile') ? 'Celular' : 'Computador',
-                    navegador: navigator.userAgent.split(') ')[1] || 'Navegador'
-                });
-                console.log("Log de acesso registrado.");
-            } catch (error) {
-                console.error("Erro ao registrar log:", error);
-            }
-        }
         const firebaseConfig = {
             apiKey: "AIzaSyD4unyd0N0fjzrAleN_o-cul3sJEEtmiy8",
             authDomain: "test-699cb.firebaseapp.com",
@@ -538,12 +244,23 @@
             view: 'events',
             currentUser: JSON.parse(localStorage.getItem('ccb_user_session')) || null,
             eventFilterType: 'all',
-            events: [],
-            ministries: [],
-            users: []
+            events: [], ministries: [], users: [], editingId: null, activeModalType: 'event'
         };
 
         const DIAS_LIST = ["1ª Segunda", "1ª Terça", "1ª Quarta", "1ª Quinta", "1ª Sexta", "1º Sábado", "1º Domingo", "2ª Segunda", "2ª Terça", "2ª Quarta", "2ª Quinta", "2ª Sexta", "2º Sábado", "2º Domingo", "3ª Segunda", "3ª Terça", "3ª Quarta", "3ª Quinta", "3ª Sexta", "3º Sábado", "3º Domingo", "4ª Segunda", "4ª Terça", "4ª Quarta", "4ª Quinta", "4ª Sexta", "4º Sábado", "4º Domingo", "Última Segunda", "Última Terça", "Última Quarta", "Última Quinta", "Última Sexta", "Último Sábado", "Último Domingo"];
+
+        // Funções de Registro e Navegação
+        async function registrarLog(usuario) {
+            try {
+                await db.collection("access_logs").add({
+                    usuario: usuario,
+                    dataHora: new Date().toLocaleString("pt-BR"),
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    dispositivo: navigator.userAgent.toLowerCase().includes('mobile') ? 'Celular' : 'Computador',
+                    navegador: navigator.userAgent.split(') ')[1] || 'Navegador'
+                });
+            } catch (e) { console.error(e); }
+        }
 
         function toggleSidebar(show) {
             document.getElementById('sidebar').classList.toggle('active', show);
@@ -559,20 +276,12 @@
         }
 
         function startSync() {
-            db.collection("events").onSnapshot(snapshot => {
-                state.events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                refreshFilters(); renderEvents();
-            });
-            db.collection("ministries").onSnapshot(snapshot => {
-                state.ministries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                refreshFilters(); renderMinistries();
-            });
-            db.collection("users").onSnapshot(snapshot => {
-                state.users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                if (state.view === 'admin') renderAdmin();
-            });
+            db.collection("events").onSnapshot(s => { state.events = s.docs.map(d => ({id: d.id, ...d.data()})); refreshFilters(); renderEvents(); });
+            db.collection("ministries").onSnapshot(s => { state.ministries = s.docs.map(d => ({id: d.id, ...d.data()})); refreshFilters(); renderMinistries(); });
+            db.collection("users").onSnapshot(s => { state.users = s.docs.map(d => ({id: d.id, ...d.data()})); if(state.view==='admin') renderAdmin(); });
         }
 
+        // Renderização de Eventos
         function renderEvents() {
             const city = document.getElementById('filterCidadeEvent').value;
             const search = document.getElementById('searchEvents').value.toLowerCase();
@@ -585,12 +294,14 @@
 
             grid.innerHTML = filtered.map(e => `
                 <div class="card-event ${e.tipoEvento === 'especial' ? 'especial' : ''}">
-                    <span style="font-size:0.6rem; font-weight:800; color:var(--p-accent); text-transform:uppercase;">${e.tipoEvento === 'especial' ? 'Evento' : 'Ensaio Local'}</span>
-                    <h3>${e.titulo}</h3>
-                    <p class="church-name">🏛 ${e.nomeIgreja}</p>
-                    <div class="info-item">📍 ${e.endereco}</div>
-                    <div class="info-item">🕒 ${e.dataEnsaio} - ${e.horarioEnsaio}</div>
-                    ${e.obs ? `<div class="obs-container">Obs: ${e.obs}</div>` : ''}
+                    <div>
+                        <span style="font-size:0.6rem; font-weight:800; color:var(--p-accent); text-transform:uppercase;">${e.tipoEvento === 'especial' ? 'Evento' : 'Ensaio Local'}</span>
+                        <h3>${e.titulo}</h3>
+                        <p>🏛 ${e.nomeIgreja}</p>
+                        <div style="font-size:0.8rem; margin:5px 0;">📍 ${e.endereco}</div>
+                        <div style="font-size:0.8rem; font-weight:600;">🕒 ${e.dataEnsaio} - ${e.horarioEnsaio}</div>
+                        ${e.obs ? `<div class="obs-container">Obs: ${e.obs}</div>` : ''}
+                    </div>
                     <div class="card-actions">
                         <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.endereco + ',' + e.cidadeEstado)}" target="_blank" class="btn-card bg-maps">Maps</a>
                         <a href="https://waze.com/ul?q=${encodeURIComponent(e.endereco)}" target="_blank" class="btn-card bg-waze">Waze</a>
@@ -599,35 +310,19 @@
                     ${state.currentUser ? `<button class="btn-ui btn-primary" style="margin-top:10px; width:100%; font-size:0.7rem" onclick="openModal('event', '${e.id}')">Editar</button>` : ''}
                 </div>`).join('');
         }
-        function compartilharEvento(titulo, igreja, data, hora, endereco) {
-            const saudacao = "🅐 🅟🅐🅩 🅓🅔 🅓🅔🅤🅢";
-            const texto = `${saudacao}\n` +
-                `*CONVITE ESPECIAL*\n\n` +
-                `🎵 *${titulo.toUpperCase()}*\n\n` +
-                `🏛 Comum: ${igreja}\n\n` +
-                `📅 Data: ${data}\n\n` +
-                `⏰ Horário: ${hora}\n\n` +
-                `📍 Local: ${endereco}\n\n` +
-                `_Acesse a agenda completa em: ${window.location.href}_`;
 
-            if (navigator.share) {
-                navigator.share({
-                    title: titulo,
-                    text: texto
-                });
-            } else {
-                navigator.clipboard.writeText(texto);
-                alert("Convite copiado para o WhatsApp!");
-            }
+        function compartilharEvento(titulo, igreja, data, hora, endereco) {
+            const texto = `*🅐 🅟🅐🅩 🅓🅔 🅓🅔🅤🅢*\n\n*CONVITE ESPECIAL*\n🎵 *${titulo.toUpperCase()}*\n🏛 Comum: ${igreja}\n📅 Data: ${data}\n⏰ Hora: ${hora}\n📍 Local: ${endereco}\n\n_Veja em: ${window.location.href}_`;
+            if (navigator.share) navigator.share({ title: titulo, text: texto });
+            else { navigator.clipboard.writeText(texto); alert("Copiado!"); }
         }
+
+        // Renderização de Ministérios
         function formatarWhatsApp(tel) {
-            const num = tel.replace(/\D/g, ''); // Remove tudo que não é número
-            if (num.length === 11) {
-                return `(${num.slice(0, 2)}) ${num.slice(2, 7)}-${num.slice(7)}`;
-            } else if (num.length === 10) {
-                return `(${num.slice(0, 2)}) ${num.slice(2, 6)}-${num.slice(6)}`;
-            }
-            return tel; // Retorna original se não for 10 ou 11 dígitos
+            const num = tel.replace(/\D/g, '');
+            if (num.length === 11) return `(${num.slice(0, 2)}) ${num.slice(2, 7)}-${num.slice(7)}`;
+            if (num.length === 10) return `(${num.slice(0, 2)}) ${num.slice(2, 6)}-${num.slice(6)}`;
+            return tel;
         }
 
         function renderMinistries() {
@@ -636,83 +331,59 @@
             const grid = document.getElementById('minGrid');
             const filtered = state.ministries.filter(m => (!city || m.cidade === city) && (m.nome.toLowerCase().includes(search) || m.cargo.toLowerCase().includes(search)));
             grid.innerHTML = filtered.map(m => `
-    <div class="card-min" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
-        <div>
-            <img src="${m.photo || 'https://via.placeholder.com/80?text=CCB'}" class="min-photo">
-            <h4 style="font-weight:700;">${m.nome}</h4>
-            <p style="color:var(--p-accent); font-weight:700; font-size:0.8rem;">${m.cargo}</p>
-            <div style="font-size:0.8rem; color:var(--p-text-light); margin: 8px 0;">🏛 ${m.igreja} | 📍 ${m.cidade}</div>
-        </div>
-        
-        <div style="font-size:0.9rem; font-weight:700; color: var(--p-dark); background:#f1f5f9; padding:8px; border-radius:8px; margin-top:10px;">
-            Telefone ${formatarWhatsApp(m.tel)}
-        </div>
-
-        ${state.currentUser ? `
-            <div style="margin-top:10px; display:flex; gap:5px">
-                <button class="btn-ui btn-primary" style="flex:1; font-size:0.7rem" onclick="openModal('ministry', '${m.id}')">Editar</button>
-                <button class="btn-ui" style="background:#fee2e2; color:#ef4444; flex:1; font-size:0.7rem" onclick="deleteItem('ministries', '${m.id}')">Excluir</button>
-            </div>` : ''}
-    </div>`).join('');
+                <div class="card-min">
+                    <div>
+                        <img src="${m.photo || 'https://via.placeholder.com/80?text=CCB'}" class="min-photo">
+                        <h4 style="font-weight:700;">${m.nome}</h4>
+                        <p style="color:var(--p-accent); font-weight:700; font-size:0.8rem;">${m.cargo}</p>
+                        <div style="font-size:0.8rem; color:var(--p-text-light); margin: 8px 0;">🏛 ${m.igreja} | 📍 ${m.cidade}</div>
+                    </div>
+                    <div style="font-size:0.9rem; font-weight:700; color: var(--p-dark); background:#f1f5f9; padding:8px; border-radius:8px; margin-top:10px;">
+                        Telefone ${formatarWhatsApp(m.tel)}
+                    </div>
+                    ${state.currentUser ? `<div style="margin-top:10px; display:flex; gap:5px"><button class="btn-ui btn-primary" style="flex:1; font-size:0.7rem" onclick="openModal('ministry', '${m.id}')">Editar</button><button class="btn-ui" style="background:#fee2e2; color:#ef4444; flex:1; font-size:0.7rem" onclick="deleteItem('ministries', '${m.id}')">Excluir</button></div>` : ''}
+                </div>`).join('');
         }
 
+        // Administração e Auth
         async function processAuth() {
             const u = document.getElementById('auth_user').value.trim();
             const p = document.getElementById('auth_pass').value.trim();
             const snapshot = await db.collection("users").where("user", "==", u).where("pass", "==", p).get();
-
             if (!snapshot.empty) {
-                const userData = snapshot.docs[0].data();
-                state.currentUser = { user: userData.user, role: userData.role };
+                state.currentUser = { user: u, role: snapshot.docs[0].data().role };
                 localStorage.setItem('ccb_user_session', JSON.stringify(state.currentUser));
-
-                // --- CHAMADA DO LOG AQUI ---
                 await registrarLog(u);
-
-                alert("Bem-vindo, " + u + "!");
                 location.reload();
-            } else {
-                alert("Usuário ou senha incorretos.");
-            }
-        }
-        async function adminCreateUser() {
-            const u = document.getElementById('reg_user').value.trim();
-            const p = document.getElementById('reg_pass').value.trim();
-            if (!u || !p) return alert("Preencha");
-            await db.collection("users").add({ user: u, pass: p, role: 'user' });
-            alert("Criado!");
-            document.getElementById('reg_user').value = ""; document.getElementById('reg_pass').value = "";
-        }
-
-        async function deleteUser(id) {
-            if (confirm("Excluir conta?")) await db.collection("users").doc(id).delete();
+            } else alert("Incorreto");
         }
 
         function renderAdmin() {
             if (!state.currentUser || state.currentUser.role !== 'admin') return;
-            document.getElementById('userTable').innerHTML = state.users.map(u => `
-                <div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between">
-                    <div>👤 ${u.user} (${u.role})</div>
-                    ${u.user !== state.currentUser.user ? `<button onclick="deleteUser('${u.id}')" style="color:red; border:none; background:none; cursor:pointer">Excluir</button>` : ''}
-                </div>`).join('');
-            db.collection("access_logs").orderBy("timestamp", "desc").limit(20).get().then(snapshot => {
-                const logHtml = snapshot.docs.map(doc => {
-                    const log = doc.data();
-                    return `
-                <div style="padding:8px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center">
-                    <div style="font-weight:600; color:var(--p-dark)">${log.usuario}</div>
-                    <div style="color:var(--p-text-light)">${log.dataHora}</div>
-                    <div style="font-size:0.7rem; background:#e2e8f0; padding:2px 6px; border-radius:4px">${log.dispositivo}</div>
-                </div>`;
-                }).join('');
-                document.getElementById('logTable').innerHTML = logHtml || "Nenhum acesso registrado.";
+            document.getElementById('userTable').innerHTML = state.users.map(u => `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between"><div>👤 ${u.user}</div><button onclick="deleteUser('${u.id}')" style="color:red; border:none; background:none">Excluir</button></div>`).join('');
+            db.collection("access_logs").orderBy("timestamp", "desc").limit(20).get().then(s => {
+                document.getElementById('logTable').innerHTML = s.docs.map(d => `<div style="padding:8px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between"><div><b>${d.data().usuario}</b></div><div style="font-size:0.7rem">${d.data().dataHora}</div></div>`).join('');
             });
         }
 
-        function logout() { localStorage.removeItem('ccb_user_session'); location.reload(); }
+        // Auxiliares de Interface
+        function refreshFilters() {
+            const cityEv = document.getElementById('filterCidadeEvent');
+            if (state.events.length === 0) {
+                cityEv.innerHTML = '<option value="">⏳ Carregando...</option>';
+            } else {
+                const evCities = [...new Set(state.events.map(e => e.cidadeEstado))].sort();
+                cityEv.innerHTML = '<option value="">📍 Selecionar Cidade</option>' + evCities.map(c => `<option value="${c}">${c}</option>`).join('');
+            }
+            const minCities = [...new Set(state.ministries.map(m => m.cidade))].sort();
+            document.getElementById('filterCidadeMin').innerHTML = '<option value="">📍 Filtrar por Cidade</option>' + minCities.map(c => `<option value="${c}">${c}</option>`).join('');
+            document.getElementById('f_dia').innerHTML = DIAS_LIST.map(d => `<option value="${d}">${d}</option>`).join('');
+            document.getElementById('filterDiaEvent').innerHTML = '<option value="">📅 Todos os Dias</option>' + DIAS_LIST.map(d => `<option value="${d}">${d}</option>`).join('');
+        }
 
         function openModal(type, id = null) {
-            activeModalType = type; editingId = id;
+            state.activeModalType = type;
+            state.editingId = id;
             document.getElementById('modalOverlay').style.display = 'flex';
             document.getElementById('fields-event').classList.toggle('hidden', type !== 'event');
             document.getElementById('fields-ministry').classList.toggle('hidden', type !== 'ministry');
@@ -725,15 +396,10 @@
                     document.getElementById('f_cidade').value = item.cidadeEstado;
                     document.getElementById('f_tipo').value = item.tipoEvento;
                     toggleDateInput();
-
                     if (item.tipoEvento === 'especial') {
-                        // Converte DD/MM/AAAA para AAAA-MM-DD para o input date
                         const partes = item.dataEnsaio.split('/');
                         if (partes.length === 3) document.getElementById('f_data_especifica').value = `${partes[2]}-${partes[1]}-${partes[0]}`;
-                    } else {
-                        document.getElementById('f_dia').value = item.dataEnsaio;
-                    }
-
+                    } else document.getElementById('f_dia').value = item.dataEnsaio;
                     document.getElementById('f_hora').value = item.horarioEnsaio;
                     document.getElementById('f_end').value = item.endereco;
                     document.getElementById('f_obs').value = item.obs || "";
@@ -744,121 +410,55 @@
                     document.getElementById('f_m_cidade').value = item.cidade;
                     document.getElementById('f_m_tel').value = item.tel;
                     document.getElementById('f_m_photo').value = item.photo || "";
-                    if (item.photo) {
-                        document.getElementById('img_preview').src = item.photo;
-                        document.getElementById('img_preview').style.display = 'block';
-                    }
+                    if (item.photo) { document.getElementById('img_preview').src = item.photo; document.getElementById('img_preview').style.display = 'block'; }
                 }
             } else {
+                document.getElementById('mainForm').reset();
+                document.getElementById('f_hora').value = "19:30";
                 document.getElementById('img_preview').style.display = 'none';
-                document.getElementById('f_tipo').value = 'recorrente';
                 toggleDateInput();
             }
         }
 
-        function toggleDateInput() {
-            const tipo = document.getElementById('f_tipo').value;
-            const campoRecorrente = document.getElementById('f_dia');
-            const campoEspecial = document.getElementById('f_data_especifica');
-
-            if (tipo === 'especial') {
-                campoRecorrente.classList.add('hidden');
-                campoEspecial.classList.remove('hidden');
-            } else {
-                campoRecorrente.classList.remove('hidden');
-                campoEspecial.classList.add('hidden');
-            }
-        }
-
-        function closeModal() {
-            document.getElementById('mainForm').reset();
-            document.getElementById('f_hora').value = "19:30"; // Garante que a sugestão volte ao fechar/limpar
-            document.getElementById('modalOverlay').style.display = 'none';
-            editingId = null;
-        }
-
-        function previewImage(input) {
-            const preview = document.getElementById('img_preview');
-            const storageField = document.getElementById('f_m_photo');
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    preview.src = e.target.result;
-                    preview.style.display = 'block';
-                    storageField.value = e.target.result;
-                }
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
         async function saveData() {
-            const collection = activeModalType === 'event' ? "events" : "ministries";
-            let data;
-
-            if (activeModalType === 'event') {
-                const tipo = document.getElementById('f_tipo').value;
-                let dataParaSalvar = "";
-
-                if (tipo === 'especial') {
-                    const dataBruta = document.getElementById('f_data_especifica').value;
-                    if (dataBruta) {
-                        const partes = dataBruta.split('-');
-                        dataParaSalvar = `${partes[2]}/${partes[1]}/${partes[0]}`;
-                    }
-                } else {
-                    dataParaSalvar = document.getElementById('f_dia').value;
-                }
-
-                data = {
-                    titulo: document.getElementById('f_titulo').value,
-                    nomeIgreja: document.getElementById('f_igreja').value,
-                    cidadeEstado: document.getElementById('f_cidade').value,
-                    dataEnsaio: dataParaSalvar,
-                    horarioEnsaio: document.getElementById('f_hora').value,
-                    tipoEvento: tipo,
-                    endereco: document.getElementById('f_end').value,
-                    obs: document.getElementById('f_obs').value
-                };
-            } else {
-                data = {
-                    nome: document.getElementById('f_m_nome').value,
-                    cargo: document.getElementById('f_m_cargo').value,
-                    igreja: document.getElementById('f_m_igreja').value,
-                    cidade: document.getElementById('f_m_cidade').value,
-                    tel: document.getElementById('f_m_tel').value,
-                    photo: document.getElementById('f_m_photo').value || ""
-                };
+            const type = state.activeModalType;
+            if (type === 'event') {
+                const t = document.getElementById('f_titulo').value;
+                const i = document.getElementById('f_igreja').value;
+                const c = document.getElementById('f_cidade').value;
+                if (!t || !i || !c) return alert("Preencha campos com *");
             }
 
-            if (editingId) await db.collection(collection).doc(editingId).update(data);
-            else await db.collection(collection).add(data);
+            const coll = type === 'event' ? 'events' : 'ministries';
+            const data = type === 'event' ? {
+                titulo: document.getElementById('f_titulo').value,
+                nomeIgreja: document.getElementById('f_igreja').value,
+                cidadeEstado: document.getElementById('f_cidade').value,
+                dataEnsaio: document.getElementById('f_tipo').value === 'especial' ? document.getElementById('f_data_especifica').value.split('-').reverse().join('/') : document.getElementById('f_dia').value,
+                horarioEnsaio: document.getElementById('f_hora').value,
+                tipoEvento: document.getElementById('f_tipo').value,
+                endereco: document.getElementById('f_end').value,
+                obs: document.getElementById('f_obs').value
+            } : {
+                nome: document.getElementById('f_m_nome').value,
+                cargo: document.getElementById('f_m_cargo').value,
+                igreja: document.getElementById('f_m_igreja').value,
+                cidade: document.getElementById('f_m_cidade').value,
+                tel: document.getElementById('f_m_tel').value,
+                photo: document.getElementById('f_m_photo').value
+            };
+
+            if(state.editingId) await db.collection(coll).doc(state.editingId).update(data);
+            else await db.collection(coll).add(data);
             closeModal();
         }
 
-        async function deleteItem(coll, id) { if (confirm("Excluir?")) await db.collection(coll).doc(id).delete(); }
-
-        function refreshFilters() {
-            const cityEv = document.getElementById('filterCidadeEvent');
-            const cityMin = document.getElementById('filterCidadeMin');
-            const evCities = [...new Set(state.events.map(e => e.cidadeEstado))].sort();
-            cityEv.innerHTML = '<option value="">📍 Selecionar Cidade (Obrigatório)</option>' + evCities.map(c => `<option value="${c}">${c}</option>`).join('');
-            const minCities = [...new Set(state.ministries.map(m => m.cidade))].sort();
-            cityMin.innerHTML = '<option value="">📍 Filtrar por Cidade (Todas)</option>' + minCities.map(c => `<option value="${c}">${c}</option>`).join('');
-            document.getElementById('f_dia').innerHTML = DIAS_LIST.map(d => `<option value="${d}">${d}</option>`).join('');
-            document.getElementById('filterDiaEvent').innerHTML = '<option value="">📅 Todos os Dias</option>' + DIAS_LIST.map(d => `<option value="${d}">${d}</option>`).join('');
-        }
-
-        function setFilterType(type, btn) {
-            state.eventFilterType = type;
-            document.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active'); renderEvents();
-        }
-
-        function compartilhar(t, e) {
-            const txt = `*CONVITE: ${t}*\n📍 Localização: ${e}`;
-            if (navigator.share) navigator.share({ text: txt });
-            else { navigator.clipboard.writeText(txt); alert("Copiado!"); }
-        }
+        function toggleDateInput() { const s = document.getElementById('f_tipo').value==='especial'; document.getElementById('f_dia').classList.toggle('hidden', s); document.getElementById('f_data_especifica').classList.toggle('hidden', !s); }
+        function closeModal() { document.getElementById('modalOverlay').style.display='none'; }
+        function logout() { localStorage.removeItem('ccb_user_session'); location.reload(); }
+        function previewImage(i) { if(i.files && i.files[0]) { const r = new FileReader(); r.onload=e=>{document.getElementById('img_preview').src=e.target.result; document.getElementById('img_preview').style.display='block'; document.getElementById('f_m_photo').value=e.target.result;}; r.readAsDataURL(i.files[0]); } }
+        async function deleteItem(c, id) { if(confirm("Excluir?")) await db.collection(c).doc(id).delete(); }
+        function setFilterType(t, b) { state.eventFilterType=t; document.querySelectorAll('.seg-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); renderEvents(); }
 
         document.getElementById('searchEvents').addEventListener('input', renderEvents);
         document.getElementById('filterCidadeEvent').addEventListener('change', renderEvents);
@@ -878,5 +478,4 @@
         };
     </script>
 </body>
-
 </html>
