@@ -275,14 +275,14 @@
                 <div class="card-event ${e.tipoEvento === 'especial' ? 'especial' : ''}">
                     <span style="font-size:0.6rem; font-weight:800; color:var(--p-accent); text-transform:uppercase;">${e.tipoEvento === 'especial' ? 'Evento' : 'Ensaio Local'}</span>
                     <h3>${e.titulo}</h3>
-                    <p class="church-name">⛪ ${e.nomeIgreja}</p>
+                    <p class="church-name">🛐 ${e.nomeIgreja}</p>
                     <div class="info-item">📍 ${e.endereco}</div>
                     <div class="info-item">🕒 ${e.dataEnsaio} - ${e.horarioEnsaio}</div>
                     ${e.obs ? `<div class="obs-container">Obs: ${e.obs}</div>` : ''}
                     <div class="card-actions">
                         <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.endereco + ',' + e.cidadeEstado)}" target="_blank" class="btn-card bg-maps">Maps</a>
                         <a href="https://waze.com/ul?q=${encodeURIComponent(e.endereco)}" target="_blank" class="btn-card bg-waze">Waze</a>
-                        <button onclick="compartilhar('${e.titulo}', '${e.endereco}')" class="btn-card bg-share">Zap</button>
+                        <button onclick="compartilhar('${e.titulo}', '${e.endereco}')" class="btn-card bg-share">Compartilhar</button>
                     </div>
                     ${state.currentUser ? `<button class="btn-ui btn-primary" style="margin-top:10px; width:100%; font-size:0.7rem" onclick="openModal('event', '${e.id}')">Editar</button>` : ''}
                 </div>`).join('');
@@ -298,7 +298,7 @@
                     <img src="${m.photo || 'https://via.placeholder.com/80?text=CCB'}" class="min-photo">
                     <h4 style="font-weight:700;">${m.nome}</h4>
                     <p style="color:var(--p-accent); font-weight:700; font-size:0.8rem;">${m.cargo}</p>
-                    <div style="font-size:0.8rem; color:var(--p-text-light); margin: 8px 0;">⛪ ${m.igreja} | 📍 ${m.cidade}</div>
+                    <div style="font-size:0.8rem; color:var(--p-text-light); margin: 8px 0;">🛐 ${m.igreja} | 📍 ${m.cidade}</div>
                     <a href="https://wa.me/${m.tel.replace(/\D/g, '')}" target="_blank" class="btn-card bg-whatsapp" style="text-decoration:none">WhatsApp</a>
                     ${state.currentUser ? `
                         <div style="margin-top:10px; display:flex; gap:5px">
@@ -516,6 +516,7 @@
     </script>
 </body>
 </html>
+
 
 
 
