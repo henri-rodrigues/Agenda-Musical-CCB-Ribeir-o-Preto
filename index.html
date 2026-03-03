@@ -49,15 +49,33 @@
         .seg-btn { flex: 1; border: none; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 600; color: var(--p-text-light); transition: 0.2s; }
         .seg-btn.active { background: var(--p-white); color: var(--p-dark); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
 
-        .card-grid { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
-        .card-event { background: white; padding: 1.5rem; border-radius: 15px; border: 1px solid var(--p-border); border-top: 5px solid var(--p-dark); position: relative; }
+        .card-grid { display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-auto-rows: 1fr; /* ADICIONE ESTA LINHA */ }
+        .card-event {background: white;
+    padding: 1.5rem;
+    border-radius: 15px;
+    border: 1px solid var(--p-border);
+    border-top: 5px solid var(--p-dark);
+    position: relative;
+    
+    /* ADICIONE ESTAS LINHAS: */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Faz os botões irem sempre para o fim */
+    min-height: 100%; }
         .card-event.especial { border-top-color: var(--p-accent); }
         .obs-container { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--p-border); font-size: 0.8rem; font-style: italic; color: var(--p-text-light); }
 
         .card-min { background: white; border-radius: 15px; padding: 2rem 1.5rem; text-align: center; border: 1px solid var(--p-border); box-shadow: var(--shadow); }
         .min-photo { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--p-accent); margin-bottom: 1rem; object-fit: cover; }
 
-        .card-actions { margin-top: 1rem; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+        .card-actions { margin-top: auto; /* Empurra o grupo de botões para o final do card */
+    padding-top: 15px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr; /* Mantém 3 colunas iguais */
+    gap: 8px; }
         .btn-card { padding: 8px; border-radius: 6px; text-decoration: none; text-align: center; font-size: 0.7rem; font-weight: 700; color: white; display: flex; align-items: center; justify-content: center; }
         .bg-maps { background: #4285F4; }
         .bg-waze { background: #33d1ff; color: #000; }
@@ -537,6 +555,7 @@
     </script>
 </body>
 </html>
+
 
 
 
