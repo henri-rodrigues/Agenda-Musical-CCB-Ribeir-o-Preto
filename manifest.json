@@ -2,11 +2,11 @@
   "background_color": "#ffffff",
   "dir": "ltr",
   "display": "standalone",
-  "name": "henri-rodrigues.github",
+  "name": "Agenda Musical RP",
   "orientation": "any",
   "scope": "/",
-  "short_name": "henri-rodrigues.github",
-  "start_url": "/",
+  "short_name": "Agenda Musical RP",
+  "start_url": "https://henri-rodrigues.github.io/Agenda-Musical-CCB-Ribeir-o-Preto/",
   "theme_color": "#0f172a",
   "icons": [
     {
