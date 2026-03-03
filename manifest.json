@@ -1,26 +1,24 @@
 {
-  "background_color": "#ffffff",
-  "dir": "ltr",
-  "display": "standalone",
   "name": "Agenda Musical RP",
+  "short_name": "Agenda RP",
+  "start_url": "https://henri-rodrigues.github.io/Agenda-Musical-CCB-Ribeir-o-Preto/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f172a",
   "orientation": "any",
   "scope": "/",
-  "short_name": "Agenda Musical RP",
-  "start_url": "https://henri-rodrigues.github.io/Agenda-Musical-CCB-Ribeir-o-Preto/",
-  "theme_color": "#0f172a",
   "icons": [
     {
       "src": "https://cdn-icons-png.flaticon.com/512/42/42284.png",
-      "type": "image/png",
       "sizes": "192x192",
-      "isSquare": false,
-      "isPng": true,
-      "isWebp": false,
-      "isJpg": false,
-      "width": 568,
-      "is512x512": false,
-      "is256x256": false,
-      "is192x192": false
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/42/42284.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
