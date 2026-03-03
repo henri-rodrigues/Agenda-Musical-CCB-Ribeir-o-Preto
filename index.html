@@ -282,11 +282,32 @@
                     <div class="card-actions">
                         <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.endereco + ',' + e.cidadeEstado)}" target="_blank" class="btn-card bg-maps">Maps</a>
                         <a href="https://waze.com/ul?q=${encodeURIComponent(e.endereco)}" target="_blank" class="btn-card bg-waze">Waze</a>
-                        <button onclick="compartilhar('${e.titulo}', '${e.endereco}')" class="btn-card bg-share">Compartilhar</button>
+                        <button onclick="compartilharEvento('${e.titulo}', '${e.nomeIgreja}', '${e.dataEnsaio}', '${e.horarioEnsaio}', '${e.endereco}')" class="btn-card bg-share">Compartilhar</button>
                     </div>
                     ${state.currentUser ? `<button class="btn-ui btn-primary" style="margin-top:10px; width:100%; font-size:0.7rem" onclick="openModal('event', '${e.id}')">Editar</button>` : ''}
                 </div>`).join('');
         }
+        function compartilharEvento(titulo, igreja, data, hora, endereco) {
+    const saudacao = "A Paz de Deus!";
+    const texto = `${saudacao}\n\n` +
+                  `🔔 *CONVITE MUSICAL*\n\n` +
+                  `🎵 *${titulo.toUpperCase()}*\n` +
+                  `⛪ Comum: ${igreja}\n` +
+                  `📅 Data: ${data}\n` +
+                  `⏰ Horário: ${hora}\n\n` +
+                  `📍 Local: ${endereco}\n\n` +
+                  `_Acesse a agenda completa em: ${window.location.href}_`;
+
+    if (navigator.share) {
+        navigator.share({
+            title: titulo,
+            text: texto
+        });
+    } else {
+        navigator.clipboard.writeText(texto);
+        alert("Convite copiado para o WhatsApp!");
+    }
+}
 
         function renderMinistries() {
             const city = document.getElementById('filterCidadeMin').value;
@@ -516,6 +537,7 @@
     </script>
 </body>
 </html>
+
 
 
 
