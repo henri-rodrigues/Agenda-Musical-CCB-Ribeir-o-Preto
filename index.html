@@ -180,7 +180,7 @@
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <input type="time" id="f_hora" class="search-input">
+                        <input type="time" id="f_hora" class="search-input" value="19:30">
                         <input type="text" id="f_end" class="search-input" placeholder="Endereço">
                     </div>
                     <textarea id="f_obs" class="search-input" placeholder="Observações" rows="2"></textarea>
@@ -231,7 +231,7 @@
             users: []
         };
 
-        const DIAS_LIST = ["1ª Segunda", "1ª Terça", "1ª Quarta", "1ª Quinta", "1ª Sexta", "2ª Segunda", "2ª Terça", "2ª Quarta", "2ª Quinta", "2ª Sexta", "3ª Segunda", "3ª Terça", "3ª Quarta", "3ª Quinta", "3ª Sexta", "4ª Segunda", "4ª Terça", "4ª Quarta", "4ª Quinta", "4ª Sexta"];
+        const DIAS_LIST = ["1ª Segunda", "1ª Terça", "1ª Quarta", "1ª Quinta", "1ª Sexta", "2ª Segunda", "2ª Terça", "2ª Quarta", "2ª Quinta", "2ª Sexta", "3ª Segunda", "3ª Terça", "3ª Quarta", "3ª Quinta", "3ª Sexta", "4ª Segunda", "4ª Terça", "4ª Quarta", "4ª Quinta", "4ª Sexta", "Ultima Segunda", "Ultima Terça", "Ultima Quarta", "Ultima Quinta", "Ultima Sexta", "Ultimo Sábado", "Ultimo Domingo"];
 
         function toggleSidebar(show) {
             document.getElementById('sidebar').classList.toggle('active', show);
@@ -511,3 +511,4 @@
     </script>
 </body>
 </html>
+
