@@ -442,6 +442,12 @@
                 <h3>👥 Usuários Ativos</h3>
                 <div id="userTable" style="margin-top:10px"></div>
             </div>
+            <div class="filter-box">
+                <h3>📜 Logs de Acessos Recentes</h3>
+                <div id="logTable" style="margin-top:10px; max-height: 300px; overflow-y: auto; font-size: 0.8rem;">
+                    Carregando logs...
+                </div>
+            </div>
         </section>
     </main>
 
@@ -500,6 +506,21 @@
     </div>
 
     <script>
+        // Função para registrar o log
+        async function registrarLog(usuario) {
+            try {
+                await db.collection("access_logs").add({
+                    usuario: usuario,
+                    dataHora: new Date().toLocaleString("pt-BR"),
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    dispositivo: navigator.userAgent.toLowerCase().includes('mobile') ? 'Celular' : 'Computador',
+                    navegador: navigator.userAgent.split(') ')[1] || 'Navegador'
+                });
+                console.log("Log de acesso registrado.");
+            } catch (error) {
+                console.error("Erro ao registrar log:", error);
+            }
+        }
         const firebaseConfig = {
             apiKey: "AIzaSyD4unyd0N0fjzrAleN_o-cul3sJEEtmiy8",
             authDomain: "test-699cb.firebaseapp.com",
@@ -644,13 +665,16 @@
                 const userData = snapshot.docs[0].data();
                 state.currentUser = { user: userData.user, role: userData.role };
                 localStorage.setItem('ccb_user_session', JSON.stringify(state.currentUser));
+
+                // --- CHAMADA DO LOG AQUI ---
+                await registrarLog(u);
+
                 alert("Bem-vindo, " + u + "!");
                 location.reload();
             } else {
                 alert("Usuário ou senha incorretos.");
             }
         }
-
         async function adminCreateUser() {
             const u = document.getElementById('reg_user').value.trim();
             const p = document.getElementById('reg_pass').value.trim();
@@ -671,6 +695,18 @@
                     <div>👤 ${u.user} (${u.role})</div>
                     ${u.user !== state.currentUser.user ? `<button onclick="deleteUser('${u.id}')" style="color:red; border:none; background:none; cursor:pointer">Excluir</button>` : ''}
                 </div>`).join('');
+            db.collection("access_logs").orderBy("timestamp", "desc").limit(20).get().then(snapshot => {
+                const logHtml = snapshot.docs.map(doc => {
+                    const log = doc.data();
+                    return `
+                <div style="padding:8px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center">
+                    <div style="font-weight:600; color:var(--p-dark)">${log.usuario}</div>
+                    <div style="color:var(--p-text-light)">${log.dataHora}</div>
+                    <div style="font-size:0.7rem; background:#e2e8f0; padding:2px 6px; border-radius:4px">${log.dispositivo}</div>
+                </div>`;
+                }).join('');
+                document.getElementById('logTable').innerHTML = logHtml || "Nenhum acesso registrado.";
+            });
         }
 
         function logout() { localStorage.removeItem('ccb_user_session'); location.reload(); }
@@ -844,4 +880,3 @@
 </body>
 
 </html>
-
