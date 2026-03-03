@@ -295,7 +295,7 @@
                   `🏛 Comum: ${igreja}\n\n` +
                   `📅 Data: ${data}\n\n` +
                   `⏰ Horário: ${hora}\n\n` +
-                  `📍 Local: ${encodeURIComponent(e.endereco + ',' + e.cidadeEstado)}\n\n` +
+                  `📍 Local: ${e.endereco}\n\n` +
                   `_Acesse a agenda completa em: ${window.location.href}_`;
 
     if (navigator.share) {
@@ -537,6 +537,7 @@
     </script>
 </body>
 </html>
+
 
 
 
