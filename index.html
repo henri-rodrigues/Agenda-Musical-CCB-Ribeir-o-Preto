@@ -407,7 +407,12 @@
             }
         }
 
-        function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; document.getElementById('mainForm').reset(); editingId = null; }
+        function closeModal() { 
+    document.getElementById('mainForm').reset(); 
+    document.getElementById('f_hora').value = "19:30"; // Garante que a sugestão volte ao fechar/limpar
+    document.getElementById('modalOverlay').style.display = 'none'; 
+    editingId = null; 
+}
 
         function previewImage(input) {
             const preview = document.getElementById('img_preview');
@@ -511,4 +516,5 @@
     </script>
 </body>
 </html>
+
 
