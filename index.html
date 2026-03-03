@@ -6,9 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sistema Musical CCB</title>
     
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#0f172a">
+    <<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f172a">
     <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/3/3e/Logo_oficial_CCB.png">
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
@@ -312,7 +313,7 @@
         }
 
         function compartilharEvento(titulo, igreja, data, hora, endereco) {
-            const texto = `*🅐 🅟🅐🅩 🅓🅔 🅓🅔🅤🅢*\n\n*CONVITE ESPECIAL*\n🎵 *${titulo.toUpperCase()}*\n🏛 Comum: ${igreja}\n📅 Data: ${data}\n⏰ Hora: ${hora}\n📍 Local: ${endereco}\n\n_Veja em: ${window.location.href}_`;
+            const texto = `🅐 🅟🅐🅩 🅓🅔 🅓🅔🅤🅢\n\n*CONVITE ESPECIAL*\n\n🎵 *${titulo.toUpperCase()}*\n🏛 Comum: ${igreja}\n📅 Data: ${data}\n⏰ Hora: ${hora}\n📍 Local: ${endereco}\n\n_Veja em: ${window.location.href}_`;
             if (navigator.share) navigator.share({ title: titulo, text: texto });
             else { navigator.clipboard.writeText(texto); alert("Copiado!"); }
         }
@@ -479,3 +480,4 @@
     </script>
 </body>
 </html>
+
