@@ -537,40 +537,10 @@ window.addEventListener('appinstalled', () => {
     alert("Aplicativo instalado com sucesso! Procure o ícone da CCB na sua tela inicial.");
 });
 
-
-
-
-
-
-
-
-
-
-
-        
-
-        // Função para pedir permissão e testar a notificação
-function testarNotificacao() {
-    if ("Notification" in window) {
-        Notification.requestPermission().then(permission => {
-            if (permission === "granted") {
-                navigator.serviceWorker.ready.then(registration => {
-                    registration.showNotification("Agenda Musical CCB", {
-                        body: "As notificações de eventos especiais estão ativas!",
-                        icon: "icon-192x192.png", // coloque o caminho do seu ícone
-                        vibrate: [200, 100, 200]
-                    });
-                });
-            }
-        });
-    }
-}
-
-// Chame a função para testar
-testarNotificacao();
     </script>
 </body>
 </html>
+
 
 
 
