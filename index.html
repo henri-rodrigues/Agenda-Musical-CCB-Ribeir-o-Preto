@@ -120,6 +120,12 @@
             <p>Congregação Cristã no Brasil</p>
         </div>
     </header>
+    <div id="installContainer" style="display:none; background: #fff; padding: 15px; border-bottom: 1px solid var(--p-border); text-align: center; box-shadow: var(--shadow);">
+    <p style="font-size: 0.85rem; margin-bottom: 10px; color: var(--p-text-light);">Instale o App para acessar mais rápido e sem a barra do navegador.</p>
+    <button onclick="forcarInstalacao()" class="btn-ui btn-primary" style="width: 100%; max-width: 300px; background: var(--p-accent); border-radius: 25px;">
+        📲 Instalar Agenda Musical
+    </button>
+</div>
 
     <main class="container">
         <section id="view-events" class="view-section active">
@@ -485,9 +491,42 @@
       .catch(err => console.log('Erro no SW:', err));
   });
 }
+        let gatilhoInstalacao;
+
+// Captura o evento de instalação do navegador
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Impede o banner padrão de aparecer sozinho
+    e.preventDefault();
+    // Guarda o evento
+    gatilhoInstalacao = e;
+    // Mostra o nosso botão customizado
+    document.getElementById('installContainer').style.display = 'block';
+});
+
+async function forcarInstalacao() {
+    if (gatilhoInstalacao) {
+        // Dispara a janela de instalação oficial
+        gatilhoInstalacao.prompt();
+        const { outcome } = await gatilhoInstalacao.userChoice;
+        if (outcome === 'accepted') {
+            document.getElementById('installContainer').style.display = 'none';
+        }
+        gatilhoInstalacao = null;
+    } else {
+        // Caso o evento não exista (como no iPhone ou se já foi instalado)
+        alert("Para instalar:\n1. Clique nos 3 pontinhos (Android) ou no ícone de Compartilhar (iPhone).\n2. Selecione 'Instalar Aplicativo' ou 'Adicionar à tela de início'.");
+    }
+}
+
+// Esconde o botão se a instalação for concluída com sucesso
+window.addEventListener('appinstalled', () => {
+    document.getElementById('installContainer').style.display = 'none';
+    alert("Aplicativo instalado com sucesso! Procure o ícone da CCB na sua tela inicial.");
+});
     </script>
 </body>
 </html>
+
 
 
 
