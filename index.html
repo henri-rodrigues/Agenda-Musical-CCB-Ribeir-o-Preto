@@ -483,7 +483,7 @@
                 if (state.currentUser.role === 'admin') document.getElementById('adminLink').classList.remove('hidden');
             }
             if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').then(reg => {
+  navigator.serviceWorker.register('./sw.js', { scope: '/Agenda-Musical-CCB-Ribeir-o-Preto/' }).then(reg => {
     reg.addEventListener('updatefound', () => {
       const newWorker = reg.installing;
       newWorker.addEventListener('statechange', () => {
@@ -540,6 +540,7 @@ window.addEventListener('appinstalled', () => {
     </script>
 </body>
 </html>
+
 
 
 
