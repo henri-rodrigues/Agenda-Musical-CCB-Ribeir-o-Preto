@@ -1,8 +1,8 @@
 [{
-  "relation": ["delegate_permission/common.handle_all_urls"],
-  "target": {
-    "namespace": "android_app",
-    "package_name": "com.musica.ccb.ribeirao",
-    "sha256_cert_fingerprints": ["A1:B2:C3... (O seu código da Play Store)"]
-  }
-}]
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "io.github.henri_rodrigues.twa",
+        "sha256_cert_fingerprints": ["EA:CB:44:C9:08:1D:05:95:F7:A2:A3:F8:30:0D:D4:92:69:3E:C9:02:6B:37:06:C2:A5:4B:CC:A7:F2:A5:37:A9"]
+      }
+    }]
