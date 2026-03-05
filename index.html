@@ -308,8 +308,7 @@ async function forcarInstalacao() {
         const ano = hoje.getFullYear();
         const diasSemana = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
         
-        // Extrai a ordem (1, 2, 3, 4 ou Última) e o nome do dia
-        const ordem = texto.includes("Última") || texto.includes("Último") ? "u" : parseInt(texto);
+        const ordem = (texto.includes("Última") || texto.includes("Último")) ? "u" : parseInt(texto);
         const diaNome = texto.split(" ")[1];
         const diaIndex = diasSemana.indexOf(diaNome);
 
@@ -317,10 +316,9 @@ async function forcarInstalacao() {
         let ocorrencias = 0;
         let ultimaData = null;
 
-        // Varre os dias do mês
         for (let d = 1; d <= 31; d++) {
             let tempDate = new Date(ano, mes, d);
-            if (tempDate.getMonth() !== mes) break; // Sai se o mês acabar
+            if (tempDate.getMonth() !== mes) break;
 
             if (tempDate.getDay() === diaIndex) {
                 ocorrencias++;
@@ -332,23 +330,30 @@ async function forcarInstalacao() {
             }
         }
 
-        const finalDate = (ordem === "u") ? ultimaData : dataEncontrada;
-        if (!finalDate) return hoje.toISOString().replace(/-|:|\.\d+/g, "");
+        let finalDate = (ordem === "u") ? ultimaData : dataEncontrada;
+        if (!finalDate) finalDate = hoje;
+
+        // Formata YYYYMMDD sem usar ISOString para evitar erro de fuso horário
+        const y = finalDate.getFullYear();
+        const m = String(finalDate.getMonth() + 1).padStart(2, '0');
+        const d = String(finalDate.getDate()).padStart(2, '0');
         
-        // Adiciona o horário (ex: 19:30 -> 193000)
-        const [h, m] = e.horarioEnsaio.split(':');
-        finalDate.setHours(h, m, 0);
+        // Remove os dois pontos do horário (ex: 19:30 -> 1930)
+        const horaFormatada = e.horarioEnsaio.replace(':', '') + "00";
         
-        return finalDate.toISOString().replace(/-|:|\.\d+/g, "");
+        return `${y}${m}${d}T${horaFormatada}`;
     };
 
-    const dataGoogle = calcularData(e.dataEnsaio);
+    const dataFormatada = calcularData(e.dataEnsaio);
     const baseUrl = "https://www.google.com/calendar/render?action=TEMPLATE";
     const titulo = encodeURIComponent(e.titulo);
     const detalhes = encodeURIComponent(`Igreja: ${e.nomeIgreja}\nLocal: ${e.endereco}`);
     const local = encodeURIComponent(`${e.endereco}, ${e.cidadeEstado}`);
     
-    return `${baseUrl}&text=${titulo}&dates=${dataGoogle}/${dataGoogle}&details=${detalhes}&location=${local}`;
+    // O Google pede data de início e fim. Como é ensaio, colocamos 2h de duração.
+    const dataFim = dataFormatada.split('T')[0] + "T" + (parseInt(dataFormatada.split('T')[1]) + 20000);
+
+    return `${baseUrl}&text=${titulo}&dates=${dataFormatada}/${dataFim}&details=${detalhes}&location=${local}`;
 }
         async function registrarLog(usuario) {
             try {
@@ -600,5 +605,6 @@ async function forcarInstalacao() {
     </script>
 </body>
 </html>
+
 
 
