@@ -241,281 +241,309 @@
         </div>
     </div>
 
-    <script>
-        // CONFIGURAÇÃO FIREBASE E ESTADO
-        const firebaseConfig = {
-            apiKey: "AIzaSyD4unyd0N0fjzrAleN_o-cul3sJEEtmiy8",
-            authDomain: "test-699cb.firebaseapp.com",
-            projectId: "test-699cb",
-            storageBucket: "test-699cb.firebasestorage.app",
-            messagingSenderId: "1024718520766",
-            appId: "1:1024718520766:web:f4acdaa59756f8035bb9ef",
-            measurementId: "G-NH91EJVNDE"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+   <script>
+    // CONFIGURAÇÃO FIREBASE E ESTADO
+    const firebaseConfig = {
+        apiKey: "AIzaSyD4unyd0N0fjzrAleN_o-cul3sJEEtmiy8",
+        authDomain: "test-699cb.firebaseapp.com",
+        projectId: "test-699cb",
+        storageBucket: "test-699cb.firebasestorage.app",
+        messagingSenderId: "1024718520766",
+        appId: "1:1024718520766:web:f4acdaa59756f8035bb9ef",
+        measurementId: "G-NH91EJVNDE"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-        let state = {
-            view: 'events',
-            currentUser: JSON.parse(localStorage.getItem('ccb_user_session')) || null,
-            eventFilterType: 'all',
-            events: [], ministries: [], users: [], editingId: null, activeModalType: 'event'
-        };
+    let state = {
+        view: 'events',
+        currentUser: JSON.parse(localStorage.getItem('ccb_user_session')) || null,
+        eventFilterType: 'all',
+        events: [], ministries: [], users: [], editingId: null, activeModalType: 'event'
+    };
 
-        const DIAS_LIST = ["1ª Segunda", "1ª Terça", "1ª Quarta", "1ª Quinta", "1ª Sexta", "1º Sábado", "1º Domingo", "2ª Segunda", "2ª Terça", "2ª Quarta", "2ª Quinta", "2ª Sexta", "2º Sábado", "2º Domingo", "3ª Segunda", "3ª Terça", "3ª Quarta", "3ª Quinta", "3ª Sexta", "3º Sábado", "3º Domingo", "4ª Segunda", "4ª Terça", "4ª Quarta", "4ª Quinta", "4ª Sexta", "4º Sábado", "4º Domingo", "Última Segunda", "Última Terça", "Última Quarta", "Última Quinta", "Última Sexta", "Último Sábado", "Último Domingo"];
+    const DIAS_LIST = ["1ª Segunda", "1ª Terça", "1ª Quarta", "1ª Quinta", "1ª Sexta", "1º Sábado", "1º Domingo", "2ª Segunda", "2ª Terça", "2ª Quarta", "2ª Quinta", "2ª Sexta", "2º Sábado", "2º Domingo", "3ª Segunda", "3ª Terça", "3ª Quarta", "3ª Quinta", "3ª Sexta", "3º Sábado", "3º Domingo", "4ª Segunda", "4ª Terça", "4ª Quarta", "4ª Quinta", "4ª Sexta", "4º Sábado", "4º Domingo", "Última Segunda", "Última Terça", "Última Quarta", "Última Quinta", "Última Sexta", "Último Sábado", "Último Domingo"];
 
-        // NOTIFICAÇÕES
-        function pedirPermissaoNotificacao() {
-            if ("Notification" in window) {
-                Notification.requestPermission().then(permission => {
-                    if (permission === "granted") {
-                        alert("Notificações ativadas com sucesso!");
-                    }
-                });
-            }
+    // NOTIFICAÇÕES
+    function pedirPermissaoNotificacao() {
+        if ("Notification" in window) {
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    alert("Notificações ativadas com sucesso!");
+                }
+            });
         }
+    }
 
-        // SERVICE WORKER COM ESCOPO RESTRITO
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js', { scope: '/Agenda-Musical-CCB-Ribeir-o-Preto/' })
-                .then(reg => {
-                    reg.addEventListener('updatefound', () => {
-                        const newWorker = reg.installing;
-                        newWorker.addEventListener('statechange', () => {
-                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                window.location.reload();
-                            }
-                        });
+    // SERVICE WORKER COM ESCOPO RESTRITO
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js', { scope: '/Agenda-Musical-CCB-Ribeir-o-Preto/' })
+            .then(reg => {
+                reg.addEventListener('updatefound', () => {
+                    const newWorker = reg.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            window.location.reload();
+                        }
                     });
                 });
-        }
-
-        // NAVEGAÇÃO E LOGS
-        async function registrarLog(usuario) {
-            try {
-                await db.collection("access_logs").add({
-                    usuario: usuario,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    dispositivo: navigator.userAgent.toLowerCase().includes('mobile') ? 'Celular' : 'Computador'
-                });
-            } catch (e) { console.error(e); }
-        }
-
-        function navigate(view) {
-            state.view = view;
-            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-            document.getElementById(`view-${view}`).classList.add('active');
-            toggleSidebar(false);
-        }
-
-        function startSync() {
-            db.collection("events").onSnapshot(s => { state.events = s.docs.map(d => ({id: d.id, ...d.data()})); refreshFilters(); renderEvents(); });
-            db.collection("ministries").onSnapshot(s => { state.ministries = s.docs.map(d => ({id: d.id, ...d.data()})); refreshFilters(); renderMinistries(); });
-            db.collection("users").onSnapshot(s => { state.users = s.docs.map(d => ({id: d.id, ...d.data()})); if(state.view==='admin') renderAdmin(); });
-        }
-
-        // RENDERIZAÇÃO DE CARDS ATUALIZADA
-        // Substitua sua função renderEvents por esta:
-function renderEvents() {
-    const city = document.getElementById('filterCidadeEvent').value;
-    const search = document.getElementById('searchEvents').value.toLowerCase();
-    const dia = document.getElementById('filterDiaEvent').value;
-    const grid = document.getElementById('eventGrid');
-    const emptyMsg = document.getElementById('eventEmptyMsg');
-
-    // NOVA LÓGICA: Se não tem cidade E não tem dia selecionado, mostra o aviso
-    if (!city && !dia) { 
-        grid.innerHTML = ""; 
-        emptyMsg.style.display = "block"; 
-        emptyMsg.innerText = "Selecione uma cidade ou um dia para ver os eventos.";
-        return; 
-    }
-    
-    emptyMsg.style.display = "none";
-
-    // Filtra os eventos
-    const filtered = state.events.filter(e => {
-        // Se a cidade foi selecionada, filtra por ela. Se não, ignora esse filtro.
-        const matchCity = city ? e.cidadeEstado === city : true;
-        
-        // Se o dia foi selecionado, filtra por ele. Se não, ignora esse filtro.
-        const matchDia = dia ? e.dataEnsaio === dia : true;
-        
-        // Filtro de Busca (Texto)
-        const matchSearch = e.titulo.toLowerCase().includes(search) || 
-                          e.nomeIgreja.toLowerCase().includes(search);
-                          
-        // Filtro de Segmentação (Todos / Ensaios / Eventos)
-        const matchType = state.eventFilterType === 'all' || e.tipoEvento === state.eventFilterType;
-
-        return matchCity && matchDia && matchSearch && matchType;
-    });
-
-    if (filtered.length === 0) {
-        grid.innerHTML = "";
-        emptyMsg.style.display = "block";
-        emptyMsg.innerText = "Nenhum evento encontrado para esta seleção.";
-        return;
+            });
     }
 
-    grid.innerHTML = filtered.map(e => `
-        <div class="card-event ${e.tipoEvento === 'especial' ? 'especial' : ''}">
-            <div>
-                <span style="font-size:0.6rem; font-weight:800; color:var(--p-accent); text-transform:uppercase;">
-                    ${e.tipoEvento === 'especial' ? 'Evento' : 'Ensaio Local'}
-                </span>
-                <h3>${e.titulo}</h3>
-                <p>🏛 ${e.nomeIgreja}</p>
-                <div style="font-size:0.8rem; margin:5px 0;">📍 ${e.endereco}</div>
-                <div style="font-size:0.8rem; font-weight:600;">🕒 ${e.dataEnsaio} - ${e.horarioEnsaio}</div>
-                
-                ${(e.encRegional || e.encLocal || e.examinadora) ? `
-                    <div class="enc-container">
-                        ${e.encRegional ? `<div><b>Regional:</b> ${e.encRegional}</div>` : ''}
-                        ${e.encLocal ? `<div><b>Local:</b> ${e.encLocal}</div>` : ''}
-                        ${e.examinadora ? `<div><b>Examinadora:</b> ${e.examinadora}</div>` : ''}
-                    </div>
-                ` : ''}
+    // NAVEGAÇÃO E LOGS
+    async function registrarLog(usuario) {
+        try {
+            await db.collection("access_logs").add({
+                usuario: usuario,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                dispositivo: navigator.userAgent.toLowerCase().includes('mobile') ? 'Celular' : 'Computador'
+            });
+        } catch (e) { console.error(e); }
+    }
 
-                ${e.obs ? `<div class="obs-container">Obs: ${e.obs}</div>` : ''}
-            </div>
-            <div class="card-actions">
-                <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.endereco)}" target="_blank" class="btn-card bg-maps">Maps</a>
-                <a href="https://waze.com/ul?q=${encodeURIComponent(e.endereco)}" target="_blank" class="btn-card bg-waze">Waze</a>
-                <button onclick="compartilharEvento('${e.titulo}', '${e.nomeIgreja}', '${e.dataEnsaio}', '${e.horarioEnsaio}', '${e.endereco}')" class="btn-card bg-share">Compartilhar</button>
-            </div>
-            ${state.currentUser ? `<button class="btn-ui btn-primary" style="margin-top:10px; width:100%; font-size:0.7rem" onclick="openModal('event', '${e.id}')">Editar</button>` : ''}
-        </div>`).join('');
-}
+    function navigate(view) {
+        state.view = view;
+        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+        document.getElementById(`view-${view}`).classList.add('active');
+        toggleSidebar(false);
+    }
 
-        // MODAL E PERSISTÊNCIA ATUALIZADOS
-        function openModal(type, id = null) {
-            state.activeModalType = type;
-            state.editingId = id;
-            document.getElementById('modalOverlay').style.display = 'flex';
-            document.getElementById('fields-event').classList.toggle('hidden', type !== 'event');
-            document.getElementById('fields-ministry').classList.toggle('hidden', type !== 'ministry');
+    function startSync() {
+        db.collection("events").onSnapshot(s => { state.events = s.docs.map(d => ({id: d.id, ...d.data()})); refreshFilters(); renderEvents(); });
+        db.collection("ministries").onSnapshot(s => { state.ministries = s.docs.map(d => ({id: d.id, ...d.data()})); refreshFilters(); renderMinistries(); });
+        db.collection("users").onSnapshot(s => { state.users = s.docs.map(d => ({id: d.id, ...d.data()})); if(state.view==='admin') renderAdmin(); });
+    }
 
-            if (id) {
-                const item = type === 'event' ? state.events.find(x => x.id === id) : state.ministries.find(x => x.id === id);
-                if (type === 'event') {
-                    document.getElementById('f_titulo').value = item.titulo;
-                    document.getElementById('f_igreja').value = item.nomeIgreja;
-                    document.getElementById('f_cidade').value = item.cidadeEstado;
-                    document.getElementById('f_tipo').value = item.tipoEvento;
-                    toggleDateInput();
-                    if (item.tipoEvento === 'especial') {
-                        const partes = item.dataEnsaio.split('/');
-                        if (partes.length === 3) document.getElementById('f_data_especifica').value = `${partes[2]}-${partes[1]}-${partes[0]}`;
-                    } else document.getElementById('f_dia').value = item.dataEnsaio;
-                    document.getElementById('f_hora').value = item.horarioEnsaio;
-                    document.getElementById('f_end').value = item.endereco;
-                    document.getElementById('f_obs').value = item.obs || "";
-                    // Novos campos
-                    document.getElementById('f_enc_regional').value = item.encRegional || "";
-                    document.getElementById('f_enc_local').value = item.encLocal || "";
-                    document.getElementById('f_examinadora').value = item.examinadora || "";
-                }
-            } else {
-                document.getElementById('mainForm').reset();
-                document.getElementById('f_hora').value = "19:30";
-                document.getElementById('f_enc_regional').value = "";
-                document.getElementById('f_enc_local').value = "";
-                document.getElementById('f_examinadora').value = "";
-                toggleDateInput();
-            }
+    // RENDERIZAÇÃO DE CARDS EVENTOS
+    function renderEvents() {
+        const city = document.getElementById('filterCidadeEvent').value;
+        const search = document.getElementById('searchEvents').value.toLowerCase();
+        const dia = document.getElementById('filterDiaEvent').value;
+        const grid = document.getElementById('eventGrid');
+        const emptyMsg = document.getElementById('eventEmptyMsg');
+
+        if (!city && !dia) { 
+            grid.innerHTML = ""; 
+            emptyMsg.style.display = "block"; 
+            emptyMsg.innerText = "Selecione uma cidade ou um dia para ver os eventos.";
+            return; 
         }
+        
+        emptyMsg.style.display = "none";
 
-        async function saveData() {
-            const type = state.activeModalType;
-            const coll = type === 'event' ? 'events' : 'ministries';
-            
-            let data;
-            if (type === 'event') {
-                const t = document.getElementById('f_titulo').value;
-                const i = document.getElementById('f_igreja').value;
-                const c = document.getElementById('f_cidade').value;
-                if (!t || !i || !c) return alert("Preencha campos com *");
-
-                data = {
-                    titulo: t,
-                    nomeIgreja: i,
-                    cidadeEstado: c,
-                    dataEnsaio: document.getElementById('f_tipo').value === 'especial' ? document.getElementById('f_data_especifica').value.split('-').reverse().join('/') : document.getElementById('f_dia').value,
-                    horarioEnsaio: document.getElementById('f_hora').value,
-                    tipoEvento: document.getElementById('f_tipo').value,
-                    endereco: document.getElementById('f_end').value,
-                    obs: document.getElementById('f_obs').value,
-                    encRegional: document.getElementById('f_enc_regional').value || "",
-                    encLocal: document.getElementById('f_enc_local').value || "",
-                    examinadora: document.getElementById('f_examinadora').value || ""
-                };
-            } else {
-                data = {
-                    nome: document.getElementById('f_m_nome').value,
-                    cargo: document.getElementById('f_m_cargo').value,
-                    igreja: document.getElementById('f_m_igreja').value,
-                    cidade: document.getElementById('f_m_cidade').value,
-                    tel: document.getElementById('f_m_tel').value,
-                    photo: document.getElementById('f_m_photo').value
-                };
-            }
-
-            if(state.editingId) await db.collection(coll).doc(state.editingId).update(data);
-            else await db.collection(coll).add(data);
-            closeModal();
-        }
-
-        // INSTALAÇÃO PWA
-        let gatilhoInstalacao;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            gatilhoInstalacao = e;
-            document.getElementById('installContainer').style.display = 'block';
+        const filtered = state.events.filter(e => {
+            const matchCity = city ? e.cidadeEstado === city : true;
+            const matchDia = dia ? e.dataEnsaio === dia : true;
+            const matchSearch = e.titulo.toLowerCase().includes(search) || e.nomeIgreja.toLowerCase().includes(search);
+            const matchType = state.eventFilterType === 'all' || e.tipoEvento === state.eventFilterType;
+            return matchCity && matchDia && matchSearch && matchType;
         });
 
-        async function forcarInstalacao() {
-            if (gatilhoInstalacao) {
-                gatilhoInstalacao.prompt();
-                const { outcome } = await gatilhoInstalacao.userChoice;
-                if (outcome === 'accepted') document.getElementById('installContainer').style.display = 'none';
-                gatilhoInstalacao = null;
+        if (filtered.length === 0) {
+            grid.innerHTML = "";
+            emptyMsg.style.display = "block";
+            emptyMsg.innerText = "Nenhum evento encontrado para esta seleção.";
+            return;
+        }
+
+        grid.innerHTML = filtered.map(e => `
+            <div class="card-event ${e.tipoEvento === 'especial' ? 'especial' : ''}">
+                <div>
+                    <span style="font-size:0.6rem; font-weight:800; color:var(--p-accent); text-transform:uppercase;">
+                        ${e.tipoEvento === 'especial' ? 'Evento' : 'Ensaio Local'}
+                    </span>
+                    <h3>${e.titulo}</h3>
+                    <p>🏛 ${e.nomeIgreja}</p>
+                    <div style="font-size:0.8rem; margin:5px 0;">📍 ${e.endereco}</div>
+                    <div style="font-size:0.8rem; font-weight:600;">🕒 ${e.dataEnsaio} - ${e.horarioEnsaio}</div>
+                    
+                    ${(e.encRegional || e.encLocal || e.examinadora) ? `
+                        <div class="enc-container" style="margin-top: 10px; padding: 8px; background: #f8fafc; border-radius: 8px; font-size: 0.75rem; border: 1px solid var(--p-border);">
+                            ${e.encRegional ? `<div><b>Regional:</b> ${e.encRegional}</div>` : ''}
+                            ${e.encLocal ? `<div><b>Local:</b> ${e.encLocal}</div>` : ''}
+                            ${e.examinadora ? `<div><b>Examinadora:</b> ${e.examinadora}</div>` : ''}
+                        </div>
+                    ` : ''}
+
+                    ${e.obs ? `<div class="obs-container" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--p-border); font-size: 0.8rem; font-style: italic; color: var(--p-text-light);">Obs: ${e.obs}</div>` : ''}
+                </div>
+                <div class="card-actions" style="margin-top: auto; padding-top: 15px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                    <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.endereco + ',' + e.cidadeEstado)}" target="_blank" class="btn-card bg-maps" style="padding: 8px; border-radius: 6px; text-decoration: none; text-align: center; font-size: 0.7rem; font-weight: 700; color: white; background: #4285F4; display: flex; align-items: center; justify-content: center;">Maps</a>
+                    <a href="https://waze.com/ul?q=${encodeURIComponent(e.endereco)}" target="_blank" class="btn-card bg-waze" style="padding: 8px; border-radius: 6px; text-decoration: none; text-align: center; font-size: 0.7rem; font-weight: 700; color: white; background: #007291; display: flex; align-items: center; justify-content: center;">Waze</a>
+                    <button onclick="compartilharEvento('${e.titulo}', '${e.nomeIgreja}', '${e.dataEnsaio}', '${e.horarioEnsaio}', '${e.endereco}')" class="btn-card bg-share" style="padding: 8px; border-radius: 6px; border: none; text-align: center; font-size: 0.7rem; font-weight: 700; color: white; background: var(--p-dark); display: flex; align-items: center; justify-content: center; cursor: pointer;">Compartilhar</button>
+                </div>
+                ${state.currentUser ? `<button class="btn-ui btn-primary" style="margin-top:10px; width:100%; font-size:0.7rem" onclick="openModal('event', '${e.id}')">Editar</button>` : ''}
+            </div>`).join('');
+    }
+
+    // RENDERIZAÇÃO DE CARDS MINISTÉRIOS
+    function renderMinistries() {
+        const city = document.getElementById('filterCidadeMin').value;
+        const search = document.getElementById('searchMin').value.toLowerCase();
+        const grid = document.getElementById('minGrid');
+        
+        const filtered = state.ministries.filter(m => (!city || m.cidade === city) && (m.nome.toLowerCase().includes(search) || m.cargo.toLowerCase().includes(search)));
+
+        grid.innerHTML = filtered.map(m => `
+            <div class="card-min">
+                <div>
+                    <img src="${m.photo || 'https://via.placeholder.com/80?text=CCB'}" class="min-photo">
+                    <h4 style="font-weight:700;">${m.nome}</h4>
+                    <p style="color:var(--p-accent); font-weight:700; font-size:0.8rem;">${m.cargo}</p>
+                    <div style="font-size:0.8rem; color:var(--p-text-light); margin: 8px 0;">🏛 ${m.igreja} | 📍 ${m.cidade}</div>
+                </div>
+                <div style="font-size:0.9rem; font-weight:700; color: var(--p-dark); background:#f1f5f9; padding:8px; border-radius:8px; margin-top:10px;">
+                    <a href="https://wa.me/55${m.tel.replace(/\D/g, '')}" target="_blank" style="text-decoration:none; color:inherit;">
+                        📱 ${formatarWhatsApp(m.tel)}
+                    </a>
+                </div>
+                ${state.currentUser ? `
+                    <div style="margin-top:10px; display:flex; gap:5px">
+                        <button class="btn-ui btn-primary" style="flex:1; font-size:0.7rem" onclick="openModal('ministry', '${m.id}')">Editar</button>
+                        <button class="btn-ui" style="background:#fee2e2; color:#ef4444; flex:1; font-size:0.7rem" onclick="deleteItem('ministries', '${m.id}')">Excluir</button>
+                    </div>` : ''}
+            </div>`).join('');
+    }
+
+    function formatarWhatsApp(tel) {
+        const num = tel.replace(/\D/g, '');
+        if (num.length === 11) return `(${num.slice(0, 2)}) ${num.slice(2, 7)}-${num.slice(7)}`;
+        if (num.length === 10) return `(${num.slice(0, 2)}) ${num.slice(2, 6)}-${num.slice(6)}`;
+        return tel;
+    }
+
+    function compartilharEvento(titulo, igreja, data, hora, endereco) {
+        const texto = `🅐 🅟🅐🅩 🅓🅔 🅓🅔🅤🅢\n\n*CONVITE ESPECIAL*\n\n🎵 *${titulo.toUpperCase()}*\n🏛 Comum: ${igreja}\n📅 Data: ${data}\n⏰ Hora: ${hora}\n📍 Local: ${endereco}\n\n_Veja em: ${window.location.href}_`;
+        if (navigator.share) navigator.share({ title: titulo, text: texto });
+        else { navigator.clipboard.writeText(texto); alert("Copiado!"); }
+    }
+
+    // MODAL E PERSISTÊNCIA
+    function openModal(type, id = null) {
+        state.activeModalType = type;
+        state.editingId = id;
+        document.getElementById('modalOverlay').style.display = 'flex';
+        document.getElementById('fields-event').classList.toggle('hidden', type !== 'event');
+        document.getElementById('fields-ministry').classList.toggle('hidden', type !== 'ministry');
+
+        if (id) {
+            const item = type === 'event' ? state.events.find(x => x.id === id) : state.ministries.find(x => x.id === id);
+            if (type === 'event') {
+                document.getElementById('f_titulo').value = item.titulo;
+                document.getElementById('f_igreja').value = item.nomeIgreja;
+                document.getElementById('f_cidade').value = item.cidadeEstado;
+                document.getElementById('f_tipo').value = item.tipoEvento;
+                toggleDateInput();
+                if (item.tipoEvento === 'especial') {
+                    const partes = item.dataEnsaio.split('/');
+                    if (partes.length === 3) document.getElementById('f_data_especifica').value = `${partes[2]}-${partes[1]}-${partes[0]}`;
+                } else document.getElementById('f_dia').value = item.dataEnsaio;
+                document.getElementById('f_hora').value = item.horarioEnsaio;
+                document.getElementById('f_end').value = item.endereco;
+                document.getElementById('f_obs').value = item.obs || "";
+                document.getElementById('f_enc_regional').value = item.encRegional || "";
+                document.getElementById('f_enc_local').value = item.encLocal || "";
+                document.getElementById('f_examinadora').value = item.examinadora || "";
             } else {
-                alert("Para instalar:\nClique nos 3 pontinhos (Android) ou Compartilhar (iPhone) e 'Adicionar à tela de início'.");
+                document.getElementById('f_m_nome').value = item.nome;
+                document.getElementById('f_m_cargo').value = item.cargo;
+                document.getElementById('f_m_igreja').value = item.igreja;
+                document.getElementById('f_m_cidade').value = item.cidade;
+                document.getElementById('f_m_tel').value = item.tel;
+                document.getElementById('f_m_photo').value = item.photo || "";
+                if (item.photo) { document.getElementById('img_preview').src = item.photo; document.getElementById('img_preview').style.display = 'block'; }
             }
+        } else {
+            document.getElementById('mainForm').reset();
+            document.getElementById('f_hora').value = "19:30";
+            document.getElementById('f_enc_regional').value = "";
+            document.getElementById('f_enc_local').value = "";
+            document.getElementById('f_examinadora').value = "";
+            document.getElementById('img_preview').style.display = 'none';
+            toggleDateInput();
+        }
+    }
+
+    async function saveData() {
+        const type = state.activeModalType;
+        const coll = type === 'event' ? 'events' : 'ministries';
+        
+        let data;
+        if (type === 'event') {
+            const t = document.getElementById('f_titulo').value;
+            const i = document.getElementById('f_igreja').value;
+            const c = document.getElementById('f_cidade').value;
+            if (!t || !i || !c) return alert("Preencha campos com *");
+
+            data = {
+                titulo: t,
+                nomeIgreja: i,
+                cidadeEstado: c,
+                dataEnsaio: document.getElementById('f_tipo').value === 'especial' ? document.getElementById('f_data_especifica').value.split('-').reverse().join('/') : document.getElementById('f_dia').value,
+                horarioEnsaio: document.getElementById('f_hora').value,
+                tipoEvento: document.getElementById('f_tipo').value,
+                endereco: document.getElementById('f_end').value,
+                obs: document.getElementById('f_obs').value,
+                encRegional: document.getElementById('f_enc_regional').value || "",
+                encLocal: document.getElementById('f_enc_local').value || "",
+                examinadora: document.getElementById('f_examinadora').value || ""
+            };
+        } else {
+            data = {
+                nome: document.getElementById('f_m_nome').value,
+                cargo: document.getElementById('f_m_cargo').value,
+                igreja: document.getElementById('f_m_igreja').value,
+                cidade: document.getElementById('f_m_cidade').value,
+                tel: document.getElementById('f_m_tel').value,
+                photo: document.getElementById('f_m_photo').value
+            };
         }
 
-        // RESTO DAS FUNÇÕES AUXILIARES
-        function toggleSidebar(show) { document.getElementById('sidebar').classList.toggle('active', show); document.getElementById('overlay').style.display = show ? 'block' : 'none'; }
-        function toggleDateInput() { const s = document.getElementById('f_tipo').value==='especial'; document.getElementById('f_dia').classList.toggle('hidden', s); document.getElementById('f_data_especifica').classList.toggle('hidden', !s); }
-        function closeModal() { document.getElementById('modalOverlay').style.display='none'; }
-        function logout() { localStorage.removeItem('ccb_user_session'); location.reload(); }
-        function setFilterType(t, b) { state.eventFilterType=t; document.querySelectorAll('.seg-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); renderEvents(); }
-        function refreshFilters() {
-            const cityEv = document.getElementById('filterCidadeEvent');
-            if (state.events.length > 0) {
-                const evCities = [...new Set(state.events.map(e => e.cidadeEstado))].sort();
-                cityEv.innerHTML = '<option value="">📍 Selecionar Cidade</option>' + evCities.map(c => `<option value="${c}">${c}</option>`).join('');
-            }
-            document.getElementById('f_dia').innerHTML = DIAS_LIST.map(d => `<option value="${d}">${d}</option>`).join('');
-            document.getElementById('filterDiaEvent').innerHTML = '<option value="">📅 Todos os Dias</option>' + DIAS_LIST.map(d => `<option value="${d}">${d}</option>`).join('');
+        if(state.editingId) await db.collection(coll).doc(state.editingId).update(data);
+        else await db.collection(coll).add(data);
+        closeModal();
+    }
+
+    // AUXILIARES E LOGIN
+    function toggleSidebar(show) { document.getElementById('sidebar').classList.toggle('active', show); document.getElementById('overlay').style.display = show ? 'block' : 'none'; }
+    function toggleDateInput() { const s = document.getElementById('f_tipo').value==='especial'; document.getElementById('f_dia').classList.toggle('hidden', s); document.getElementById('f_data_especifica').classList.toggle('hidden', !s); }
+    function closeModal() { document.getElementById('modalOverlay').style.display='none'; }
+    function logout() { localStorage.removeItem('ccb_user_session'); location.reload(); }
+    async function deleteItem(c, id) { if(confirm("Deseja realmente excluir?")) await db.collection(c).doc(id).delete(); }
+    function setFilterType(t, b) { state.eventFilterType=t; document.querySelectorAll('.seg-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); renderEvents(); }
+    function previewImage(i) { if(i.files && i.files[0]) { const r = new FileReader(); r.onload=e=>{document.getElementById('img_preview').src=e.target.result; document.getElementById('img_preview').style.display='block'; document.getElementById('f_m_photo').value=e.target.result;}; r.readAsDataURL(i.files[0]); } }
+
+    function refreshFilters() {
+        const cityEv = document.getElementById('filterCidadeEvent');
+        if (state.events.length > 0) {
+            const evCities = [...new Set(state.events.map(e => e.cidadeEstado))].sort();
+            cityEv.innerHTML = '<option value="">📍 Selecionar Cidade</option>' + evCities.map(c => `<option value="${c}">${c}</option>`).join('');
         }
+        const minCities = [...new Set(state.ministries.map(m => m.cidade))].sort();
+        document.getElementById('filterCidadeMin').innerHTML = '<option value="">📍 Filtrar por Cidade</option>' + minCities.map(c => `<option value="${c}">${c}</option>`).join('');
+        
+        document.getElementById('f_dia').innerHTML = DIAS_LIST.map(d => `<option value="${d}">${d}</option>`).join('');
+        document.getElementById('filterDiaEvent').innerHTML = '<option value="">📅 Todos os Dias</option>' + DIAS_LIST.map(d => `<option value="${d}">${d}</option>`).join('');
+    }
 
-        window.onload = () => {
-            if (state.currentUser) {
-                document.getElementById('navLogout').classList.remove('hidden');
-                document.getElementById('navLogin').classList.add('hidden');
-                document.getElementById('adminEventBtn').classList.remove('hidden');
-                document.getElementById('adminMinBtn').classList.remove('hidden');
-                if (state.currentUser.role === 'admin') document.getElementById('adminLink').classList.remove('hidden');
-            }
-            startSync();
-        };
+    window.onload = () => {
+        if (state.currentUser) {
+            document.getElementById('navLogout').classList.remove('hidden');
+            document.getElementById('navLogin').classList.add('hidden');
+            document.getElementById('adminEventBtn').classList.remove('hidden');
+            document.getElementById('adminMinBtn').classList.remove('hidden');
+            if (state.currentUser.role === 'admin') document.getElementById('adminLink').classList.remove('hidden');
+        }
+        startSync();
+    };
 
-        // Listeners
-        document.getElementById('searchEvents').addEventListener('input', renderEvents);
-        document.getElementById('filterCidadeEvent').addEventListener('change', renderEvents);
-        document.getElementById('filterDiaEvent').addEventListener('change', renderEvents);
-    </script>
+    // Listeners
+    document.getElementById('searchEvents').addEventListener('input', renderEvents);
+    document.getElementById('filterCidadeEvent').addEventListener('change', renderEvents);
+    document.getElementById('filterDiaEvent').addEventListener('change', renderEvents);
+    document.getElementById('searchMin').addEventListener('input', renderMinistries);
+    document.getElementById('filterCidadeMin').addEventListener('change', renderMinistries);
+</script>
 </body>
 </html>
+
