@@ -7,10 +7,10 @@
     <title>Sistema Musical CCB</title>
     
     <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#0f172a">
-<link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/3/3e/Logo_oficial_CCB.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/3/3e/Logo_oficial_CCB.png">
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
     <link rel="manifest" href="manifest.json">
@@ -49,7 +49,6 @@
         .header-content { text-align: center; }
         .header-content h1 { font-family: 'Poppins'; font-size: 1.5rem; color: var(--p-dark); margin-bottom: 0.2rem; }
 
-        /* Responsividade do Título */
         @media (max-width: 480px) {
             .header-content h1 { font-size: 1.1rem; }
             header { padding: 1.5rem 1rem; }
@@ -65,8 +64,7 @@
         .seg-btn { flex: 1; border: none; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 600; color: var(--p-text-light); transition: 0.2s; }
         .seg-btn.active { background: var(--p-white); color: var(--p-dark); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
 
-        /* Cards e Grid */
-        .card-grid { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); grid-auto-rows: 1fr; }
+        .card-grid { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
         
         .card-event { background: white; padding: 1.5rem; border-radius: 15px; border: 1px solid var(--p-border); border-top: 5px solid var(--p-dark); display: flex; flex-direction: column; justify-content: space-between; min-height: 280px; }
         .card-event.especial { border-top-color: var(--p-accent); }
@@ -76,14 +74,15 @@
 
         .obs-container { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--p-border); font-size: 0.8rem; font-style: italic; color: var(--p-text-light); }
 
-        /* Botões */
+        /* Estilo dos Encarregados no Card */
+        .enc-container { margin-top: 10px; padding: 8px; background: #f8fafc; border-radius: 8px; font-size: 0.75rem; border: 1px solid var(--p-border); }
+
         .card-actions { margin-top: auto; padding-top: 15px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
         .btn-card { padding: 8px; border-radius: 6px; text-decoration: none; text-align: center; font-size: 0.7rem; font-weight: 700; color: white; display: flex; align-items: center; justify-content: center; }
         .bg-maps { background: #4285F4; }
         .bg-waze { background: #007291; color: #ffffff; font-weight: 800; }
         .bg-share { background: var(--p-dark); cursor: pointer; border: none; }
 
-        /* Modais e Admin */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem; }
         .modal { background: white; padding: 2rem; border-radius: 20px; width: 100%; max-width: 550px; max-height: 90vh; overflow-y: auto; }
         .btn-ui { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 0.85rem; }
@@ -106,6 +105,7 @@
         <a id="adminLink" class="nav-link hidden" onclick="navigate('admin')">🔐 Administração</a>
         <a id="navLogin" class="nav-link" onclick="navigate('login')">👤 Entrar</a>
         <a id="navLogout" class="nav-link hidden" onclick="logout()">🚪 Sair</a>
+        <a class="nav-link" onclick="pedirPermissaoNotificacao()">🔔 Ativar Notificações</a>
     </nav>
 
     <header>
@@ -120,12 +120,13 @@
             <p>Congregação Cristã no Brasil</p>
         </div>
     </header>
+
     <div id="installContainer" style="display:none; background: #fff; padding: 15px; border-bottom: 1px solid var(--p-border); text-align: center; box-shadow: var(--shadow);">
-    <p style="font-size: 0.85rem; margin-bottom: 10px; color: var(--p-text-light);">Instale o App para acessar mais rápido.</p>
-    <button onclick="forcarInstalacao()" class="btn-ui btn-primary" style="width: 100%; max-width: 300px; background: var(--p-accent); border-radius: 25px;">
-        📲 Instalar Agenda Musical
-    </button>
-</div>
+        <p style="font-size: 0.85rem; margin-bottom: 10px; color: var(--p-text-light);">Instale o App para acessar mais rápido.</p>
+        <button onclick="forcarInstalacao()" class="btn-ui btn-primary" style="width: 100%; max-width: 300px; background: var(--p-accent); border-radius: 25px;">
+            📲 Instalar Agenda Musical
+        </button>
+    </div>
 
     <main class="container">
         <section id="view-events" class="view-section active">
@@ -211,6 +212,12 @@
                         <input type="text" id="f_end" class="search-input" placeholder="Endereço">
                     </div>
                     <textarea id="f_obs" class="search-input" placeholder="Observações" rows="2"></textarea>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                        <input type="text" id="f_enc_regional" class="search-input" placeholder="Enc. Regional (Opcional)">
+                        <input type="text" id="f_enc_local" class="search-input" placeholder="Enc. Local (Opcional)">
+                    </div>
+                    <input type="text" id="f_examinadora" class="search-input" placeholder="Examinadora (Opcional)">
                 </div>
 
                 <div id="fields-ministry" class="hidden">
@@ -235,6 +242,7 @@
     </div>
 
     <script>
+        // CONFIGURAÇÃO FIREBASE E ESTADO
         const firebaseConfig = {
             apiKey: "AIzaSyD4unyd0N0fjzrAleN_o-cul3sJEEtmiy8",
             authDomain: "test-699cb.firebaseapp.com",
@@ -244,7 +252,6 @@
             appId: "1:1024718520766:web:f4acdaa59756f8035bb9ef",
             measurementId: "G-NH91EJVNDE"
         };
-
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
@@ -257,22 +264,41 @@
 
         const DIAS_LIST = ["1ª Segunda", "1ª Terça", "1ª Quarta", "1ª Quinta", "1ª Sexta", "1º Sábado", "1º Domingo", "2ª Segunda", "2ª Terça", "2ª Quarta", "2ª Quinta", "2ª Sexta", "2º Sábado", "2º Domingo", "3ª Segunda", "3ª Terça", "3ª Quarta", "3ª Quinta", "3ª Sexta", "3º Sábado", "3º Domingo", "4ª Segunda", "4ª Terça", "4ª Quarta", "4ª Quinta", "4ª Sexta", "4º Sábado", "4º Domingo", "Última Segunda", "Última Terça", "Última Quarta", "Última Quinta", "Última Sexta", "Último Sábado", "Último Domingo"];
 
-        // Funções de Registro e Navegação
+        // NOTIFICAÇÕES
+        function pedirPermissaoNotificacao() {
+            if ("Notification" in window) {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        alert("Notificações ativadas com sucesso!");
+                    }
+                });
+            }
+        }
+
+        // SERVICE WORKER COM ESCOPO RESTRITO
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js', { scope: '/Agenda-Musical-CCB-Ribeir-o-Preto/' })
+                .then(reg => {
+                    reg.addEventListener('updatefound', () => {
+                        const newWorker = reg.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                window.location.reload();
+                            }
+                        });
+                    });
+                });
+        }
+
+        // NAVEGAÇÃO E LOGS
         async function registrarLog(usuario) {
             try {
                 await db.collection("access_logs").add({
                     usuario: usuario,
-                    dataHora: new Date().toLocaleString("pt-BR"),
                     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    dispositivo: navigator.userAgent.toLowerCase().includes('mobile') ? 'Celular' : 'Computador',
-                    navegador: navigator.userAgent.split(') ')[1] || 'Navegador'
+                    dispositivo: navigator.userAgent.toLowerCase().includes('mobile') ? 'Celular' : 'Computador'
                 });
             } catch (e) { console.error(e); }
-        }
-
-        function toggleSidebar(show) {
-            document.getElementById('sidebar').classList.toggle('active', show);
-            document.getElementById('overlay').style.display = show ? 'block' : 'none';
         }
 
         function navigate(view) {
@@ -280,7 +306,6 @@
             document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
             document.getElementById(`view-${view}`).classList.add('active');
             toggleSidebar(false);
-            if (view === 'admin') renderAdmin();
         }
 
         function startSync() {
@@ -289,106 +314,81 @@
             db.collection("users").onSnapshot(s => { state.users = s.docs.map(d => ({id: d.id, ...d.data()})); if(state.view==='admin') renderAdmin(); });
         }
 
-        // Renderização de Eventos
-        function renderEvents() {
-            const city = document.getElementById('filterCidadeEvent').value;
-            const search = document.getElementById('searchEvents').value.toLowerCase();
-            const dia = document.getElementById('filterDiaEvent').value;
-            const grid = document.getElementById('eventGrid');
-            if (!city) { grid.innerHTML = ""; document.getElementById('eventEmptyMsg').style.display = "block"; return; }
-            document.getElementById('eventEmptyMsg').style.display = "none";
+        // RENDERIZAÇÃO DE CARDS ATUALIZADA
+        // Substitua sua função renderEvents por esta:
+function renderEvents() {
+    const city = document.getElementById('filterCidadeEvent').value;
+    const search = document.getElementById('searchEvents').value.toLowerCase();
+    const dia = document.getElementById('filterDiaEvent').value;
+    const grid = document.getElementById('eventGrid');
+    const emptyMsg = document.getElementById('eventEmptyMsg');
 
-            const filtered = state.events.filter(e => e.cidadeEstado === city && (state.eventFilterType === 'all' || e.tipoEvento === state.eventFilterType) && (!dia || e.dataEnsaio === dia) && (e.titulo.toLowerCase().includes(search) || e.nomeIgreja.toLowerCase().includes(search)));
+    // NOVA LÓGICA: Se não tem cidade E não tem dia selecionado, mostra o aviso
+    if (!city && !dia) { 
+        grid.innerHTML = ""; 
+        emptyMsg.style.display = "block"; 
+        emptyMsg.innerText = "Selecione uma cidade ou um dia para ver os eventos.";
+        return; 
+    }
+    
+    emptyMsg.style.display = "none";
 
-            grid.innerHTML = filtered.map(e => `
-                <div class="card-event ${e.tipoEvento === 'especial' ? 'especial' : ''}">
-                    <div>
-                        <span style="font-size:0.6rem; font-weight:800; color:var(--p-accent); text-transform:uppercase;">${e.tipoEvento === 'especial' ? 'Evento' : 'Ensaio Local'}</span>
-                        <h3>${e.titulo}</h3>
-                        <p>🏛 ${e.nomeIgreja}</p>
-                        <div style="font-size:0.8rem; margin:5px 0;">📍 ${e.endereco}</div>
-                        <div style="font-size:0.8rem; font-weight:600;">🕒 ${e.dataEnsaio} - ${e.horarioEnsaio}</div>
-                        ${e.obs ? `<div class="obs-container">Obs: ${e.obs}</div>` : ''}
+    // Filtra os eventos
+    const filtered = state.events.filter(e => {
+        // Se a cidade foi selecionada, filtra por ela. Se não, ignora esse filtro.
+        const matchCity = city ? e.cidadeEstado === city : true;
+        
+        // Se o dia foi selecionado, filtra por ele. Se não, ignora esse filtro.
+        const matchDia = dia ? e.dataEnsaio === dia : true;
+        
+        // Filtro de Busca (Texto)
+        const matchSearch = e.titulo.toLowerCase().includes(search) || 
+                          e.nomeIgreja.toLowerCase().includes(search);
+                          
+        // Filtro de Segmentação (Todos / Ensaios / Eventos)
+        const matchType = state.eventFilterType === 'all' || e.tipoEvento === state.eventFilterType;
+
+        return matchCity && matchDia && matchSearch && matchType;
+    });
+
+    if (filtered.length === 0) {
+        grid.innerHTML = "";
+        emptyMsg.style.display = "block";
+        emptyMsg.innerText = "Nenhum evento encontrado para esta seleção.";
+        return;
+    }
+
+    grid.innerHTML = filtered.map(e => `
+        <div class="card-event ${e.tipoEvento === 'especial' ? 'especial' : ''}">
+            <div>
+                <span style="font-size:0.6rem; font-weight:800; color:var(--p-accent); text-transform:uppercase;">
+                    ${e.tipoEvento === 'especial' ? 'Evento' : 'Ensaio Local'}
+                </span>
+                <h3>${e.titulo}</h3>
+                <p>🏛 ${e.nomeIgreja}</p>
+                <div style="font-size:0.8rem; margin:5px 0;">📍 ${e.endereco}</div>
+                <div style="font-size:0.8rem; font-weight:600;">🕒 ${e.dataEnsaio} - ${e.horarioEnsaio}</div>
+                
+                ${(e.encRegional || e.encLocal || e.examinadora) ? `
+                    <div class="enc-container">
+                        ${e.encRegional ? `<div><b>Regional:</b> ${e.encRegional}</div>` : ''}
+                        ${e.encLocal ? `<div><b>Local:</b> ${e.encLocal}</div>` : ''}
+                        ${e.examinadora ? `<div><b>Examinadora:</b> ${e.examinadora}</div>` : ''}
                     </div>
-                    <div class="card-actions">
-                        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.endereco + ',' + e.cidadeEstado)}" target="_blank" class="btn-card bg-maps">Maps</a>
-                        <a href="https://waze.com/ul?q=${encodeURIComponent(e.endereco)}" target="_blank" class="btn-card bg-waze">Waze</a>
-                        <button onclick="compartilharEvento('${e.titulo}', '${e.nomeIgreja}', '${e.dataEnsaio}', '${e.horarioEnsaio}', '${e.endereco}')" class="btn-card bg-share">Compartilhar</button>
-                    </div>
-                    ${state.currentUser ? `<button class="btn-ui btn-primary" style="margin-top:10px; width:100%; font-size:0.7rem" onclick="openModal('event', '${e.id}')">Editar</button>` : ''}
-                </div>`).join('');
-        }
+                ` : ''}
 
-        function compartilharEvento(titulo, igreja, data, hora, endereco) {
-            const texto = `🅐 🅟🅐🅩 🅓🅔 🅓🅔🅤🅢\n\n*CONVITE ESPECIAL*\n\n🎵 *${titulo.toUpperCase()}*\n🏛 Comum: ${igreja}\n📅 Data: ${data}\n⏰ Hora: ${hora}\n📍 Local: ${endereco}\n\n_Veja em: ${window.location.href}_`;
-            if (navigator.share) navigator.share({ title: titulo, text: texto });
-            else { navigator.clipboard.writeText(texto); alert("Copiado!"); }
-        }
+                ${e.obs ? `<div class="obs-container">Obs: ${e.obs}</div>` : ''}
+            </div>
+            <div class="card-actions">
+                <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.endereco)}" target="_blank" class="btn-card bg-maps">Maps</a>
+                <a href="https://waze.com/ul?q=${encodeURIComponent(e.endereco)}" target="_blank" class="btn-card bg-waze">Waze</a>
+                <button onclick="compartilharEvento('${e.titulo}', '${e.nomeIgreja}', '${e.dataEnsaio}', '${e.horarioEnsaio}', '${e.endereco}')" class="btn-card bg-share">Compartilhar</button>
+            </div>
+            ${state.currentUser ? `<button class="btn-ui btn-primary" style="margin-top:10px; width:100%; font-size:0.7rem" onclick="openModal('event', '${e.id}')">Editar</button>` : ''}
+        </div>`).join('');
+}
 
-        // Renderização de Ministérios
-        function formatarWhatsApp(tel) {
-            const num = tel.replace(/\D/g, '');
-            if (num.length === 11) return `(${num.slice(0, 2)}) ${num.slice(2, 7)}-${num.slice(7)}`;
-            if (num.length === 10) return `(${num.slice(0, 2)}) ${num.slice(2, 6)}-${num.slice(6)}`;
-            return tel;
-        }
-
-        function renderMinistries() {
-            const city = document.getElementById('filterCidadeMin').value;
-            const search = document.getElementById('searchMin').value.toLowerCase();
-            const grid = document.getElementById('minGrid');
-            const filtered = state.ministries.filter(m => (!city || m.cidade === city) && (m.nome.toLowerCase().includes(search) || m.cargo.toLowerCase().includes(search)));
-            grid.innerHTML = filtered.map(m => `
-                <div class="card-min">
-                    <div>
-                        <img src="${m.photo || 'https://via.placeholder.com/80?text=CCB'}" class="min-photo">
-                        <h4 style="font-weight:700;">${m.nome}</h4>
-                        <p style="color:var(--p-accent); font-weight:700; font-size:0.8rem;">${m.cargo}</p>
-                        <div style="font-size:0.8rem; color:var(--p-text-light); margin: 8px 0;">🏛 ${m.igreja} | 📍 ${m.cidade}</div>
-                    </div>
-                    <div style="font-size:0.9rem; font-weight:700; color: var(--p-dark); background:#f1f5f9; padding:8px; border-radius:8px; margin-top:10px;">
-                        Telefone ${formatarWhatsApp(m.tel)}
-                    </div>
-                    ${state.currentUser ? `<div style="margin-top:10px; display:flex; gap:5px"><button class="btn-ui btn-primary" style="flex:1; font-size:0.7rem" onclick="openModal('ministry', '${m.id}')">Editar</button><button class="btn-ui" style="background:#fee2e2; color:#ef4444; flex:1; font-size:0.7rem" onclick="deleteItem('ministries', '${m.id}')">Excluir</button></div>` : ''}
-                </div>`).join('');
-        }
-
-        // Administração e Auth
-        async function processAuth() {
-            const u = document.getElementById('auth_user').value.trim();
-            const p = document.getElementById('auth_pass').value.trim();
-            const snapshot = await db.collection("users").where("user", "==", u).where("pass", "==", p).get();
-            if (!snapshot.empty) {
-                state.currentUser = { user: u, role: snapshot.docs[0].data().role };
-                localStorage.setItem('ccb_user_session', JSON.stringify(state.currentUser));
-                await registrarLog(u);
-                location.reload();
-            } else alert("Incorreto");
-        }
-
-        function renderAdmin() {
-            if (!state.currentUser || state.currentUser.role !== 'admin') return;
-            document.getElementById('userTable').innerHTML = state.users.map(u => `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between"><div>👤 ${u.user}</div><button onclick="deleteUser('${u.id}')" style="color:red; border:none; background:none">Excluir</button></div>`).join('');
-            db.collection("access_logs").orderBy("timestamp", "desc").limit(20).get().then(s => {
-                document.getElementById('logTable').innerHTML = s.docs.map(d => `<div style="padding:8px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between"><div><b>${d.data().usuario}</b></div><div style="font-size:0.7rem">${d.data().dataHora}</div></div>`).join('');
-            });
-        }
-
-        // Auxiliares de Interface
-        function refreshFilters() {
-            const cityEv = document.getElementById('filterCidadeEvent');
-            if (state.events.length === 0) {
-                cityEv.innerHTML = '<option value="">⏳ Carregando...</option>';
-            } else {
-                const evCities = [...new Set(state.events.map(e => e.cidadeEstado))].sort();
-                cityEv.innerHTML = '<option value="">📍 Selecionar Cidade</option>' + evCities.map(c => `<option value="${c}">${c}</option>`).join('');
-            }
-            const minCities = [...new Set(state.ministries.map(m => m.cidade))].sort();
-            document.getElementById('filterCidadeMin').innerHTML = '<option value="">📍 Filtrar por Cidade</option>' + minCities.map(c => `<option value="${c}">${c}</option>`).join('');
-            document.getElementById('f_dia').innerHTML = DIAS_LIST.map(d => `<option value="${d}">${d}</option>`).join('');
-            document.getElementById('filterDiaEvent').innerHTML = '<option value="">📅 Todos os Dias</option>' + DIAS_LIST.map(d => `<option value="${d}">${d}</option>`).join('');
-        }
-
+        // MODAL E PERSISTÊNCIA ATUALIZADOS
         function openModal(type, id = null) {
             state.activeModalType = type;
             state.editingId = id;
@@ -411,68 +411,95 @@
                     document.getElementById('f_hora').value = item.horarioEnsaio;
                     document.getElementById('f_end').value = item.endereco;
                     document.getElementById('f_obs').value = item.obs || "";
-                } else {
-                    document.getElementById('f_m_nome').value = item.nome;
-                    document.getElementById('f_m_cargo').value = item.cargo;
-                    document.getElementById('f_m_igreja').value = item.igreja;
-                    document.getElementById('f_m_cidade').value = item.cidade;
-                    document.getElementById('f_m_tel').value = item.tel;
-                    document.getElementById('f_m_photo').value = item.photo || "";
-                    if (item.photo) { document.getElementById('img_preview').src = item.photo; document.getElementById('img_preview').style.display = 'block'; }
+                    // Novos campos
+                    document.getElementById('f_enc_regional').value = item.encRegional || "";
+                    document.getElementById('f_enc_local').value = item.encLocal || "";
+                    document.getElementById('f_examinadora').value = item.examinadora || "";
                 }
             } else {
                 document.getElementById('mainForm').reset();
                 document.getElementById('f_hora').value = "19:30";
-                document.getElementById('img_preview').style.display = 'none';
+                document.getElementById('f_enc_regional').value = "";
+                document.getElementById('f_enc_local').value = "";
+                document.getElementById('f_examinadora').value = "";
                 toggleDateInput();
             }
         }
 
         async function saveData() {
             const type = state.activeModalType;
+            const coll = type === 'event' ? 'events' : 'ministries';
+            
+            let data;
             if (type === 'event') {
                 const t = document.getElementById('f_titulo').value;
                 const i = document.getElementById('f_igreja').value;
                 const c = document.getElementById('f_cidade').value;
                 if (!t || !i || !c) return alert("Preencha campos com *");
-            }
 
-            const coll = type === 'event' ? 'events' : 'ministries';
-            const data = type === 'event' ? {
-                titulo: document.getElementById('f_titulo').value,
-                nomeIgreja: document.getElementById('f_igreja').value,
-                cidadeEstado: document.getElementById('f_cidade').value,
-                dataEnsaio: document.getElementById('f_tipo').value === 'especial' ? document.getElementById('f_data_especifica').value.split('-').reverse().join('/') : document.getElementById('f_dia').value,
-                horarioEnsaio: document.getElementById('f_hora').value,
-                tipoEvento: document.getElementById('f_tipo').value,
-                endereco: document.getElementById('f_end').value,
-                obs: document.getElementById('f_obs').value
-            } : {
-                nome: document.getElementById('f_m_nome').value,
-                cargo: document.getElementById('f_m_cargo').value,
-                igreja: document.getElementById('f_m_igreja').value,
-                cidade: document.getElementById('f_m_cidade').value,
-                tel: document.getElementById('f_m_tel').value,
-                photo: document.getElementById('f_m_photo').value
-            };
+                data = {
+                    titulo: t,
+                    nomeIgreja: i,
+                    cidadeEstado: c,
+                    dataEnsaio: document.getElementById('f_tipo').value === 'especial' ? document.getElementById('f_data_especifica').value.split('-').reverse().join('/') : document.getElementById('f_dia').value,
+                    horarioEnsaio: document.getElementById('f_hora').value,
+                    tipoEvento: document.getElementById('f_tipo').value,
+                    endereco: document.getElementById('f_end').value,
+                    obs: document.getElementById('f_obs').value,
+                    encRegional: document.getElementById('f_enc_regional').value || "",
+                    encLocal: document.getElementById('f_enc_local').value || "",
+                    examinadora: document.getElementById('f_examinadora').value || ""
+                };
+            } else {
+                data = {
+                    nome: document.getElementById('f_m_nome').value,
+                    cargo: document.getElementById('f_m_cargo').value,
+                    igreja: document.getElementById('f_m_igreja').value,
+                    cidade: document.getElementById('f_m_cidade').value,
+                    tel: document.getElementById('f_m_tel').value,
+                    photo: document.getElementById('f_m_photo').value
+                };
+            }
 
             if(state.editingId) await db.collection(coll).doc(state.editingId).update(data);
             else await db.collection(coll).add(data);
             closeModal();
         }
 
+        // INSTALAÇÃO PWA
+        let gatilhoInstalacao;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            gatilhoInstalacao = e;
+            document.getElementById('installContainer').style.display = 'block';
+        });
+
+        async function forcarInstalacao() {
+            if (gatilhoInstalacao) {
+                gatilhoInstalacao.prompt();
+                const { outcome } = await gatilhoInstalacao.userChoice;
+                if (outcome === 'accepted') document.getElementById('installContainer').style.display = 'none';
+                gatilhoInstalacao = null;
+            } else {
+                alert("Para instalar:\nClique nos 3 pontinhos (Android) ou Compartilhar (iPhone) e 'Adicionar à tela de início'.");
+            }
+        }
+
+        // RESTO DAS FUNÇÕES AUXILIARES
+        function toggleSidebar(show) { document.getElementById('sidebar').classList.toggle('active', show); document.getElementById('overlay').style.display = show ? 'block' : 'none'; }
         function toggleDateInput() { const s = document.getElementById('f_tipo').value==='especial'; document.getElementById('f_dia').classList.toggle('hidden', s); document.getElementById('f_data_especifica').classList.toggle('hidden', !s); }
         function closeModal() { document.getElementById('modalOverlay').style.display='none'; }
         function logout() { localStorage.removeItem('ccb_user_session'); location.reload(); }
-        function previewImage(i) { if(i.files && i.files[0]) { const r = new FileReader(); r.onload=e=>{document.getElementById('img_preview').src=e.target.result; document.getElementById('img_preview').style.display='block'; document.getElementById('f_m_photo').value=e.target.result;}; r.readAsDataURL(i.files[0]); } }
-        async function deleteItem(c, id) { if(confirm("Excluir?")) await db.collection(c).doc(id).delete(); }
         function setFilterType(t, b) { state.eventFilterType=t; document.querySelectorAll('.seg-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); renderEvents(); }
-
-        document.getElementById('searchEvents').addEventListener('input', renderEvents);
-        document.getElementById('filterCidadeEvent').addEventListener('change', renderEvents);
-        document.getElementById('filterDiaEvent').addEventListener('change', renderEvents);
-        document.getElementById('searchMin').addEventListener('input', renderMinistries);
-        document.getElementById('filterCidadeMin').addEventListener('change', renderMinistries);
+        function refreshFilters() {
+            const cityEv = document.getElementById('filterCidadeEvent');
+            if (state.events.length > 0) {
+                const evCities = [...new Set(state.events.map(e => e.cidadeEstado))].sort();
+                cityEv.innerHTML = '<option value="">📍 Selecionar Cidade</option>' + evCities.map(c => `<option value="${c}">${c}</option>`).join('');
+            }
+            document.getElementById('f_dia').innerHTML = DIAS_LIST.map(d => `<option value="${d}">${d}</option>`).join('');
+            document.getElementById('filterDiaEvent').innerHTML = '<option value="">📅 Todos os Dias</option>' + DIAS_LIST.map(d => `<option value="${d}">${d}</option>`).join('');
+        }
 
         window.onload = () => {
             if (state.currentUser) {
@@ -482,74 +509,13 @@
                 document.getElementById('adminMinBtn').classList.remove('hidden');
                 if (state.currentUser.role === 'admin') document.getElementById('adminLink').classList.remove('hidden');
             }
-            if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js', { scope: '/Agenda-Musical-CCB-Ribeir-o-Preto/' }).then(reg => {
-    reg.addEventListener('updatefound', () => {
-      const newWorker = reg.installing;
-      newWorker.addEventListener('statechange', () => {
-        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-          // Avisa o usuário ou recarrega a página sozinho
-          window.location.reload();
-        }
-      });
-    });
-  });
-}
             startSync();
         };
-        if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .then(reg => console.log('Service Worker ativo!', reg))
-      .catch(err => console.log('Erro no SW:', err));
-  });
-}
-        let gatilhoInstalacao;
 
-// Captura o evento de instalação do navegador
-window.addEventListener('beforeinstallprompt', (e) => {
-    // Impede o banner padrão de aparecer sozinho
-    e.preventDefault();
-    // Guarda o evento
-    gatilhoInstalacao = e;
-    // Mostra o nosso botão customizado
-    document.getElementById('installContainer').style.display = 'block';
-});
-
-async function forcarInstalacao() {
-    if (gatilhoInstalacao) {
-        // Dispara a janela de instalação oficial
-        gatilhoInstalacao.prompt();
-        const { outcome } = await gatilhoInstalacao.userChoice;
-        if (outcome === 'accepted') {
-            document.getElementById('installContainer').style.display = 'none';
-        }
-        gatilhoInstalacao = null;
-    } else {
-        // Caso o evento não exista (como no iPhone ou se já foi instalado)
-        alert("Para instalar:\n1. Clique nos 3 pontinhos (Android) ou no ícone de Compartilhar (iPhone).\n2. Selecione 'Instalar Aplicativo' ou 'Adicionar à tela de início'.");
-    }
-}
-
-// Esconde o botão se a instalação for concluída com sucesso
-window.addEventListener('appinstalled', () => {
-    document.getElementById('installContainer').style.display = 'none';
-    alert("Aplicativo instalado com sucesso! Procure o ícone da CCB na sua tela inicial.");
-});
-
+        // Listeners
+        document.getElementById('searchEvents').addEventListener('input', renderEvents);
+        document.getElementById('filterCidadeEvent').addEventListener('change', renderEvents);
+        document.getElementById('filterDiaEvent').addEventListener('change', renderEvents);
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
