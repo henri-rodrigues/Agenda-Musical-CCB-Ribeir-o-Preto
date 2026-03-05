@@ -302,13 +302,54 @@ async function forcarInstalacao() {
 
         // 4. MELHORIA: LINK PARA AGENDA
         function gerarLinkCalendario(e) {
-            const baseUrl = "https://www.google.com/calendar/render?action=TEMPLATE";
-            const titulo = encodeURIComponent(e.titulo);
-            const detalhes = encodeURIComponent(`Igreja: ${e.nomeIgreja}\nLocal: ${e.endereco}`);
-            const local = encodeURIComponent(`${e.endereco}, ${e.cidadeEstado}`);
-            return `${baseUrl}&text=${titulo}&details=${detalhes}&location=${local}`;
+    const calcularData = (texto) => {
+        const hoje = new Date();
+        const mes = hoje.getMonth();
+        const ano = hoje.getFullYear();
+        const diasSemana = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+        
+        // Extrai a ordem (1, 2, 3, 4 ou Última) e o nome do dia
+        const ordem = texto.includes("Última") || texto.includes("Último") ? "u" : parseInt(texto);
+        const diaNome = texto.split(" ")[1];
+        const diaIndex = diasSemana.indexOf(diaNome);
+
+        let dataEncontrada = null;
+        let ocorrencias = 0;
+        let ultimaData = null;
+
+        // Varre os dias do mês
+        for (let d = 1; d <= 31; d++) {
+            let tempDate = new Date(ano, mes, d);
+            if (tempDate.getMonth() !== mes) break; // Sai se o mês acabar
+
+            if (tempDate.getDay() === diaIndex) {
+                ocorrencias++;
+                ultimaData = new Date(tempDate);
+                if (ocorrencias === ordem) {
+                    dataEncontrada = new Date(tempDate);
+                    break;
+                }
+            }
         }
 
+        const finalDate = (ordem === "u") ? ultimaData : dataEncontrada;
+        if (!finalDate) return hoje.toISOString().replace(/-|:|\.\d+/g, "");
+        
+        // Adiciona o horário (ex: 19:30 -> 193000)
+        const [h, m] = e.horarioEnsaio.split(':');
+        finalDate.setHours(h, m, 0);
+        
+        return finalDate.toISOString().replace(/-|:|\.\d+/g, "");
+    };
+
+    const dataGoogle = calcularData(e.dataEnsaio);
+    const baseUrl = "https://www.google.com/calendar/render?action=TEMPLATE";
+    const titulo = encodeURIComponent(e.titulo);
+    const detalhes = encodeURIComponent(`Igreja: ${e.nomeIgreja}\nLocal: ${e.endereco}`);
+    const local = encodeURIComponent(`${e.endereco}, ${e.cidadeEstado}`);
+    
+    return `${baseUrl}&text=${titulo}&dates=${dataGoogle}/${dataGoogle}&details=${detalhes}&location=${local}`;
+}
         async function registrarLog(usuario) {
             try {
                 await db.collection("access_logs").add({
@@ -377,8 +418,8 @@ async function forcarInstalacao() {
                         ${e.obs ? `<div class="obs-container">Obs: ${e.obs}</div>` : ''}
                     </div>
                     <div class="card-actions">
-                        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.endereco + ',' + e.cidadeEstado)}" target="_blank" class="btn-card bg-maps">Maps</a>
-                        <a href="https://waze.com/ul?q=${encodeURIComponent(e.endereco)}" target="_blank" class="btn-card bg-waze">Waze</a>
+                        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.endereco + ', ' + e.cidadeEstado)}" target="_blank" class="btn-card bg-maps">Maps</a>
+                        <a href="https://waze.com/ul?q=${encodeURIComponent(e.endereco + ', ' + e.cidadeEstado)}" target="_blank" class="btn-card bg-waze">Waze</a>
                         <a href="${gerarLinkCalendario(e)}" target="_blank" class="btn-card bg-calendar">Agenda</a>
                         <button onclick="compartilharEvento('${e.titulo}', '${e.nomeIgreja}', '${e.dataEnsaio}', '${e.horarioEnsaio}', '${e.endereco}')" class="btn-card bg-share">Compartilhar</button>
                     </div>
@@ -559,4 +600,5 @@ async function forcarInstalacao() {
     </script>
 </body>
 </html>
+
 
