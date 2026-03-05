@@ -105,7 +105,6 @@
         <a id="adminLink" class="nav-link hidden" onclick="navigate('admin')">🔐 Administração</a>
         <a id="navLogin" class="nav-link" onclick="navigate('login')">👤 Entrar</a>
         <a id="navLogout" class="nav-link hidden" onclick="logout()">🚪 Sair</a>
-        <a class="nav-link" onclick="pedirPermissaoNotificacao()">🔔 Ativar Notificações</a>
     </nav>
 
     <header>
@@ -263,17 +262,6 @@
     };
 
     const DIAS_LIST = ["1ª Segunda", "1ª Terça", "1ª Quarta", "1ª Quinta", "1ª Sexta", "1º Sábado", "1º Domingo", "2ª Segunda", "2ª Terça", "2ª Quarta", "2ª Quinta", "2ª Sexta", "2º Sábado", "2º Domingo", "3ª Segunda", "3ª Terça", "3ª Quarta", "3ª Quinta", "3ª Sexta", "3º Sábado", "3º Domingo", "4ª Segunda", "4ª Terça", "4ª Quarta", "4ª Quinta", "4ª Sexta", "4º Sábado", "4º Domingo", "Última Segunda", "Última Terça", "Última Quarta", "Última Quinta", "Última Sexta", "Último Sábado", "Último Domingo"];
-
-    // NOTIFICAÇÕES
-    function pedirPermissaoNotificacao() {
-        if ("Notification" in window) {
-            Notification.requestPermission().then(permission => {
-                if (permission === "granted") {
-                    alert("Notificações ativadas com sucesso!");
-                }
-            });
-        }
-    }
 
     // SERVICE WORKER COM ESCOPO RESTRITO
     if ('serviceWorker' in navigator) {
@@ -537,34 +525,6 @@
         startSync();
     };
 
-       async function ativarNotificacoesPush() {
-    try {
-        const messaging = firebase.messaging();
-        
-        // Solicita permissão
-        const permission = await Notification.requestPermission();
-        
-        if (permission === 'granted') {
-            // Obtém o Token do aparelho
-            const token = await messaging.getToken({
-                vapidKey: 'SUA_CHAVE_VAPID_AQUI' // Você gera isso no Console do Firebase
-            });
-
-            if (token) {
-                console.log("Token do usuário:", token);
-                // Salva o token no Firestore para você poder enviar mensagens depois
-                await db.collection("push_tokens").doc(token).set({
-                    token: token,
-                    atualizado em: new Date()
-                });
-                alert("Notificações automáticas ativadas!");
-            }
-        }
-    } catch (error) {
-        console.error("Erro ao ativar push:", error);
-    }
-}
-
     // Listeners
     document.getElementById('searchEvents').addEventListener('input', renderEvents);
     document.getElementById('filterCidadeEvent').addEventListener('change', renderEvents);
@@ -574,5 +534,6 @@
 </script>
 </body>
 </html>
+
 
 
