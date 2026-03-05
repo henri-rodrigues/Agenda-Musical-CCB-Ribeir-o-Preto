@@ -537,6 +537,34 @@
         startSync();
     };
 
+       async function ativarNotificacoesPush() {
+    try {
+        const messaging = firebase.messaging();
+        
+        // Solicita permissão
+        const permission = await Notification.requestPermission();
+        
+        if (permission === 'granted') {
+            // Obtém o Token do aparelho
+            const token = await messaging.getToken({
+                vapidKey: 'SUA_CHAVE_VAPID_AQUI' // Você gera isso no Console do Firebase
+            });
+
+            if (token) {
+                console.log("Token do usuário:", token);
+                // Salva o token no Firestore para você poder enviar mensagens depois
+                await db.collection("push_tokens").doc(token).set({
+                    token: token,
+                    atualizado em: new Date()
+                });
+                alert("Notificações automáticas ativadas!");
+            }
+        }
+    } catch (error) {
+        console.error("Erro ao ativar push:", error);
+    }
+}
+
     // Listeners
     document.getElementById('searchEvents').addEventListener('input', renderEvents);
     document.getElementById('filterCidadeEvent').addEventListener('change', renderEvents);
@@ -546,4 +574,5 @@
 </script>
 </body>
 </html>
+
 
