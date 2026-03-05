@@ -301,20 +301,34 @@ async function forcarInstalacao() {
         }
 
         // 4. MELHORIA: LINK PARA AGENDA
-        function gerarLinkCalendario(e) {
+       function gerarLinkCalendario(e) {
     const calcularData = (texto) => {
         const hoje = new Date();
+        
+        // SE FOR EVENTO ESPECIAL (Data fixa: DD/MM/YYYY)
+        if (texto.includes('/')) {
+            const partes = texto.split('/');
+            return `${partes[2]}${partes[1]}${partes[0]}T${e.horarioEnsaio.replace(':', '')}00`;
+        }
+
+        // SE FOR ENSAIO LOCAL (Recorrente: 1ª Segunda)
         const mes = hoje.getMonth();
         const ano = hoje.getFullYear();
         const diasSemana = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
         
-        const ordem = (texto.includes("Última") || texto.includes("Último")) ? "u" : parseInt(texto);
-        const diaNome = texto.split(" ")[1];
+        // Limpa o texto para evitar erros de espaços
+        const partesTexto = texto.trim().split(/\s+/); 
+        const ordemTexto = partesTexto[0]; // Ex: "1ª" ou "Última"
+        const diaNome = partesTexto[1];   // Ex: "Segunda"
+        
+        const ordem = (ordemTexto.includes("Últ") || ordemTexto.includes("Ult")) ? "u" : parseInt(ordemTexto);
         const diaIndex = diasSemana.indexOf(diaNome);
+
+        if (diaIndex === -1) return hoje.toISOString().replace(/-|:|\.\d+/g, "").split('T')[0] + "T000000";
 
         let dataEncontrada = null;
         let ocorrencias = 0;
-        let ultimaData = null;
+        let ultimaDataNoMes = null;
 
         for (let d = 1; d <= 31; d++) {
             let tempDate = new Date(ano, mes, d);
@@ -322,38 +336,37 @@ async function forcarInstalacao() {
 
             if (tempDate.getDay() === diaIndex) {
                 ocorrencias++;
-                ultimaData = new Date(tempDate);
+                ultimaDataNoMes = new Date(tempDate);
                 if (ocorrencias === ordem) {
                     dataEncontrada = new Date(tempDate);
-                    break;
                 }
             }
         }
 
-        let finalDate = (ordem === "u") ? ultimaData : dataEncontrada;
+        let finalDate = (ordem === "u") ? ultimaDataNoMes : dataEncontrada;
+        
+        // Se a data calculada já passou no mês atual, não faz sentido salvar no passado. 
+        // Vamos deixar no dia atual ou você pode usar aquela lógica de pular mês.
         if (!finalDate) finalDate = hoje;
 
-        // Formata YYYYMMDD sem usar ISOString para evitar erro de fuso horário
         const y = finalDate.getFullYear();
         const m = String(finalDate.getMonth() + 1).padStart(2, '0');
-        const d = String(finalDate.getDate()).padStart(2, '0');
+        const day = String(finalDate.getDate()).padStart(2, '0');
+        const hora = e.horarioEnsaio.replace(':', '').padStart(4, '0') + "00";
         
-        // Remove os dois pontos do horário (ex: 19:30 -> 1930)
-        const horaFormatada = e.horarioEnsaio.replace(':', '') + "00";
-        
-        return `${y}${m}${d}T${horaFormatada}`;
+        return `${y}${m}${day}T${hora}`;
     };
 
-    const dataFormatada = calcularData(e.dataEnsaio);
+    const dataStart = calcularData(e.dataEnsaio);
     const baseUrl = "https://www.google.com/calendar/render?action=TEMPLATE";
     const titulo = encodeURIComponent(e.titulo);
     const detalhes = encodeURIComponent(`Igreja: ${e.nomeIgreja}\nLocal: ${e.endereco}`);
     const local = encodeURIComponent(`${e.endereco}, ${e.cidadeEstado}`);
     
-    // O Google pede data de início e fim. Como é ensaio, colocamos 2h de duração.
-    const dataFim = dataFormatada.split('T')[0] + "T" + (parseInt(dataFormatada.split('T')[1]) + 20000);
+    // Define o fim do evento como 2 horas após o início
+    const dataEnd = dataStart.split('T')[0] + "T" + (parseInt(dataStart.split('T')[1]) + 20000);
 
-    return `${baseUrl}&text=${titulo}&dates=${dataFormatada}/${dataFim}&details=${detalhes}&location=${local}`;
+    return `${baseUrl}&text=${titulo}&dates=${dataStart}/${dataEnd}&details=${detalhes}&location=${local}`;
 }
         async function registrarLog(usuario) {
             try {
@@ -605,6 +618,7 @@ async function forcarInstalacao() {
     </script>
 </body>
 </html>
+
 
 
 
