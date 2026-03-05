@@ -31,6 +31,25 @@
             --transition: all 0.3s ease;
         }
 
+        /* 1. MELHORIA: TEMA ESCURO AUTOMÁTICO */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --p-bg: #020617;
+                --p-white: #1e293b;
+                --p-text: #f1f5f9;
+                --p-text-light: #94a3b8;
+                --p-border: #334155;
+            }
+            body { background: #020617; }
+            .filter-box, .card-event, .card-min, .modal { background: #1e293b !important; color: white; border-color: #334155; }
+            .search-input, .select-ui { background: #0f172a !important; color: white; border-color: #334155; }
+            .seg-btn { color: #94a3b8; }
+            .seg-btn.active { background: #334155; color: white; }
+            .enc-container { background: #0f172a !important; border-color: #334155; }
+            header { background: #1e293b !important; border-bottom-color: #334155; }
+            header h1 { color: white !important; }
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Inter', sans-serif; background: var(--p-bg); color: var(--p-text); min-height: 100vh; overflow-x: hidden; }
 
@@ -73,15 +92,14 @@
         .min-photo { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--p-accent); margin-bottom: 1rem; object-fit: cover; }
 
         .obs-container { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--p-border); font-size: 0.8rem; font-style: italic; color: var(--p-text-light); }
-
-        /* Estilo dos Encarregados no Card */
         .enc-container { margin-top: 10px; padding: 8px; background: #f8fafc; border-radius: 8px; font-size: 0.75rem; border: 1px solid var(--p-border); }
 
-        .card-actions { margin-top: auto; padding-top: 15px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-        .btn-card { padding: 8px; border-radius: 6px; text-decoration: none; text-align: center; font-size: 0.7rem; font-weight: 700; color: white; display: flex; align-items: center; justify-content: center; }
+        .card-actions { margin-top: auto; padding-top: 15px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .btn-card { padding: 8px; border-radius: 6px; text-decoration: none; text-align: center; font-size: 0.7rem; font-weight: 700; color: white; display: flex; align-items: center; justify-content: center; border: none; }
         .bg-maps { background: #4285F4; }
-        .bg-waze { background: #007291; color: #ffffff; font-weight: 800; }
-        .bg-share { background: var(--p-dark); cursor: pointer; border: none; }
+        .bg-waze { background: #007291; color: #ffffff; }
+        .bg-share { background: var(--p-dark); cursor: pointer; }
+        .bg-calendar { background: #34a853; } /* Cor do Google Agenda */
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem; }
         .modal { background: white; padding: 2rem; border-radius: 20px; width: 100%; max-width: 550px; max-height: 90vh; overflow-y: auto; }
@@ -133,8 +151,12 @@
                 <button class="btn-ui btn-primary" onclick="openModal('event')">+ Novo Evento</button>
             </div>
             <div class="filter-box">
+                <button onclick="filtrarHoje()" class="btn-ui" style="width: 100%; margin-bottom: 15px; background: var(--p-accent); color: white; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    🔍 Onde tem ensaio hoje?
+                </button>
+
                 <input type="text" id="searchEvents" class="search-input" placeholder="🔍 Pesquisar por título ou igreja...">
-                <div class="filters-row">
+                <div class="filters-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                     <select id="filterCidadeEvent" class="select-ui"><option value="">📍 Selecionar Cidade</option></select>
                     <select id="filterDiaEvent" class="select-ui"><option value="">📅 Todos os Dias</option></select>
                 </div>
@@ -145,7 +167,7 @@
                 </div>
             </div>
             <div id="eventGrid" class="card-grid"></div>
-            <div id="eventEmptyMsg" style="text-align: center; padding: 4rem 1rem; color: var(--p-text-light);">Selecione uma cidade.</div>
+            <div id="eventEmptyMsg" style="text-align: center; padding: 4rem 1rem; color: var(--p-text-light);">Selecione uma cidade ou um dia para ver os eventos.</div>
         </section>
 
         <section id="view-ministries" class="view-section">
@@ -240,300 +262,303 @@
         </div>
     </div>
 
-   <script>
-    // CONFIGURAÇÃO FIREBASE E ESTADO
-    const firebaseConfig = {
-        apiKey: "AIzaSyD4unyd0N0fjzrAleN_o-cul3sJEEtmiy8",
-        authDomain: "test-699cb.firebaseapp.com",
-        projectId: "test-699cb",
-        storageBucket: "test-699cb.firebasestorage.app",
-        messagingSenderId: "1024718520766",
-        appId: "1:1024718520766:web:f4acdaa59756f8035bb9ef",
-        measurementId: "G-NH91EJVNDE"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    <script>
+        // CONFIGURAÇÃO FIREBASE E ESTADO
+        const firebaseConfig = {
+            apiKey: "AIzaSyD4unyd0N0fjzrAleN_o-cul3sJEEtmiy8",
+            authDomain: "test-699cb.firebaseapp.com",
+            projectId: "test-699cb",
+            storageBucket: "test-699cb.firebasestorage.app",
+            messagingSenderId: "1024718520766",
+            appId: "1:1024718520766:web:f4acdaa59756f8035bb9ef",
+            measurementId: "G-NH91EJVNDE"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-    let state = {
-        view: 'events',
-        currentUser: JSON.parse(localStorage.getItem('ccb_user_session')) || null,
-        eventFilterType: 'all',
-        events: [], ministries: [], users: [], editingId: null, activeModalType: 'event'
-    };
+        // 3. MELHORIA: PERSISTÊNCIA OFFLINE
+        db.enablePersistence().catch(err => console.error("Erro offline:", err.code));
 
-    const DIAS_LIST = ["1ª Segunda", "1ª Terça", "1ª Quarta", "1ª Quinta", "1ª Sexta", "1º Sábado", "1º Domingo", "2ª Segunda", "2ª Terça", "2ª Quarta", "2ª Quinta", "2ª Sexta", "2º Sábado", "2º Domingo", "3ª Segunda", "3ª Terça", "3ª Quarta", "3ª Quinta", "3ª Sexta", "3º Sábado", "3º Domingo", "4ª Segunda", "4ª Terça", "4ª Quarta", "4ª Quinta", "4ª Sexta", "4º Sábado", "4º Domingo", "Última Segunda", "Última Terça", "Última Quarta", "Última Quinta", "Última Sexta", "Último Sábado", "Último Domingo"];
+        let state = {
+            view: 'events',
+            currentUser: JSON.parse(localStorage.getItem('ccb_user_session')) || null,
+            eventFilterType: 'all',
+            events: [], ministries: [], users: [], editingId: null, activeModalType: 'event'
+        };
 
-    // SERVICE WORKER COM ESCOPO RESTRITO
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js', { scope: '/Agenda-Musical-CCB-Ribeir-o-Preto/' })
-            .then(reg => {
-                reg.addEventListener('updatefound', () => {
-                    const newWorker = reg.installing;
-                    newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            window.location.reload();
-                        }
-                    });
+        const DIAS_LIST = ["1ª Segunda", "1ª Terça", "1ª Quarta", "1ª Quinta", "1ª Sexta", "1º Sábado", "1º Domingo", "2ª Segunda", "2ª Terça", "2ª Quarta", "2ª Quinta", "2ª Sexta", "2º Sábado", "2º Domingo", "3ª Segunda", "3ª Terça", "3ª Quarta", "3ª Quinta", "3ª Sexta", "3º Sábado", "3º Domingo", "4ª Segunda", "4ª Terça", "4ª Quarta", "4ª Quinta", "4ª Sexta", "4º Sábado", "4º Domingo", "Última Segunda", "Última Terça", "Última Quarta", "Última Quinta", "Última Sexta", "Último Sábado", "Último Domingo"];
+
+        // 2. MELHORIA: LOGICA FILTRO HOJE
+        function filtrarHoje() {
+            const agora = new Date();
+            const diasSemana = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+            const diaNome = diasSemana[agora.getDay()];
+            const diaMes = agora.getDate();
+            const semanaNum = Math.ceil(diaMes / 7);
+            const genero = (diaNome === "Sábado" || diaNome === "Domingo") ? "º" : "ª";
+            const hojeFormatado = `${semanaNum}${genero} ${diaNome}`;
+            
+            document.getElementById('filterDiaEvent').value = hojeFormatado;
+            document.getElementById('filterCidadeEvent').value = "";
+            renderEvents();
+        }
+
+        // 4. MELHORIA: LINK PARA AGENDA
+        function gerarLinkCalendario(e) {
+            const baseUrl = "https://www.google.com/calendar/render?action=TEMPLATE";
+            const titulo = encodeURIComponent(e.titulo);
+            const detalhes = encodeURIComponent(`Igreja: ${e.nomeIgreja}\nLocal: ${e.endereco}`);
+            const local = encodeURIComponent(`${e.endereco}, ${e.cidadeEstado}`);
+            return `${baseUrl}&text=${titulo}&details=${detalhes}&location=${local}`;
+        }
+
+        async function registrarLog(usuario) {
+            try {
+                await db.collection("access_logs").add({
+                    usuario: usuario,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    dataHora: new Date().toLocaleString("pt-BR"),
+                    dispositivo: navigator.userAgent.toLowerCase().includes('mobile') ? 'Celular' : 'Computador'
                 });
-            });
-    }
-
-    // NAVEGAÇÃO E LOGS
-    async function registrarLog(usuario) {
-        try {
-            await db.collection("access_logs").add({
-                usuario: usuario,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                dispositivo: navigator.userAgent.toLowerCase().includes('mobile') ? 'Celular' : 'Computador'
-            });
-        } catch (e) { console.error(e); }
-    }
-
-    function navigate(view) {
-        state.view = view;
-        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-        document.getElementById(`view-${view}`).classList.add('active');
-        toggleSidebar(false);
-    }
-
-    function startSync() {
-        db.collection("events").onSnapshot(s => { state.events = s.docs.map(d => ({id: d.id, ...d.data()})); refreshFilters(); renderEvents(); });
-        db.collection("ministries").onSnapshot(s => { state.ministries = s.docs.map(d => ({id: d.id, ...d.data()})); refreshFilters(); renderMinistries(); });
-        db.collection("users").onSnapshot(s => { state.users = s.docs.map(d => ({id: d.id, ...d.data()})); if(state.view==='admin') renderAdmin(); });
-    }
-
-    // RENDERIZAÇÃO DE CARDS EVENTOS
-    function renderEvents() {
-        const city = document.getElementById('filterCidadeEvent').value;
-        const search = document.getElementById('searchEvents').value.toLowerCase();
-        const dia = document.getElementById('filterDiaEvent').value;
-        const grid = document.getElementById('eventGrid');
-        const emptyMsg = document.getElementById('eventEmptyMsg');
-
-        if (!city && !dia) { 
-            grid.innerHTML = ""; 
-            emptyMsg.style.display = "block"; 
-            emptyMsg.innerText = "Selecione uma cidade ou um dia para ver os eventos.";
-            return; 
-        }
-        
-        emptyMsg.style.display = "none";
-
-        const filtered = state.events.filter(e => {
-            const matchCity = city ? e.cidadeEstado === city : true;
-            const matchDia = dia ? e.dataEnsaio === dia : true;
-            const matchSearch = e.titulo.toLowerCase().includes(search) || e.nomeIgreja.toLowerCase().includes(search);
-            const matchType = state.eventFilterType === 'all' || e.tipoEvento === state.eventFilterType;
-            return matchCity && matchDia && matchSearch && matchType;
-        });
-
-        if (filtered.length === 0) {
-            grid.innerHTML = "";
-            emptyMsg.style.display = "block";
-            emptyMsg.innerText = "Nenhum evento encontrado para esta seleção.";
-            return;
+            } catch (e) { console.error(e); }
         }
 
-        grid.innerHTML = filtered.map(e => `
-            <div class="card-event ${e.tipoEvento === 'especial' ? 'especial' : ''}">
-                <div>
-                    <span style="font-size:0.6rem; font-weight:800; color:var(--p-accent); text-transform:uppercase;">
-                        ${e.tipoEvento === 'especial' ? 'Evento' : 'Ensaio Local'}
-                    </span>
-                    <h3>${e.titulo}</h3>
-                    <p>🏛 ${e.nomeIgreja}</p>
-                    <div style="font-size:0.8rem; margin:5px 0;">📍 ${e.endereco}</div>
-                    <div style="font-size:0.8rem; font-weight:600;">🕒 ${e.dataEnsaio} - ${e.horarioEnsaio}</div>
-                    
-                    ${(e.encRegional || e.encLocal || e.examinadora) ? `
-                        <div class="enc-container" style="margin-top: 10px; padding: 8px; background: #f8fafc; border-radius: 8px; font-size: 0.75rem; border: 1px solid var(--p-border);">
-                            ${e.encRegional ? `<div><b>Regional:</b> ${e.encRegional}</div>` : ''}
-                            ${e.encLocal ? `<div><b>Local:</b> ${e.encLocal}</div>` : ''}
-                            ${e.examinadora ? `<div><b>Examinadora:</b> ${e.examinadora}</div>` : ''}
-                        </div>
-                    ` : ''}
+        function toggleSidebar(show) {
+            document.getElementById('sidebar').classList.toggle('active', show);
+            document.getElementById('overlay').style.display = show ? 'block' : 'none';
+        }
 
-                    ${e.obs ? `<div class="obs-container" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--p-border); font-size: 0.8rem; font-style: italic; color: var(--p-text-light);">Obs: ${e.obs}</div>` : ''}
-                </div>
-                <div class="card-actions" style="margin-top: auto; padding-top: 15px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
-                    <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.endereco + ',' + e.cidadeEstado)}" target="_blank" class="btn-card bg-maps" style="padding: 8px; border-radius: 6px; text-decoration: none; text-align: center; font-size: 0.7rem; font-weight: 700; color: white; background: #4285F4; display: flex; align-items: center; justify-content: center;">Maps</a>
-                    <a href="https://waze.com/ul?q=${encodeURIComponent(e.endereco)}" target="_blank" class="btn-card bg-waze" style="padding: 8px; border-radius: 6px; text-decoration: none; text-align: center; font-size: 0.7rem; font-weight: 700; color: white; background: #007291; display: flex; align-items: center; justify-content: center;">Waze</a>
-                    <button onclick="compartilharEvento('${e.titulo}', '${e.nomeIgreja}', '${e.dataEnsaio}', '${e.horarioEnsaio}', '${e.endereco}')" class="btn-card bg-share" style="padding: 8px; border-radius: 6px; border: none; text-align: center; font-size: 0.7rem; font-weight: 700; color: white; background: var(--p-dark); display: flex; align-items: center; justify-content: center; cursor: pointer;">Compartilhar</button>
-                </div>
-                ${state.currentUser ? `<button class="btn-ui btn-primary" style="margin-top:10px; width:100%; font-size:0.7rem" onclick="openModal('event', '${e.id}')">Editar</button>` : ''}
-            </div>`).join('');
-    }
+        function navigate(view) {
+            state.view = view;
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            document.getElementById(`view-${view}`).classList.add('active');
+            toggleSidebar(false);
+            if (view === 'admin') renderAdmin();
+        }
 
-    // RENDERIZAÇÃO DE CARDS MINISTÉRIOS
-    function renderMinistries() {
-        const city = document.getElementById('filterCidadeMin').value;
-        const search = document.getElementById('searchMin').value.toLowerCase();
-        const grid = document.getElementById('minGrid');
-        
-        const filtered = state.ministries.filter(m => (!city || m.cidade === city) && (m.nome.toLowerCase().includes(search) || m.cargo.toLowerCase().includes(search)));
+        function startSync() {
+            db.collection("events").onSnapshot(s => { state.events = s.docs.map(d => ({id: d.id, ...d.data()})); refreshFilters(); renderEvents(); });
+            db.collection("ministries").onSnapshot(s => { state.ministries = s.docs.map(d => ({id: d.id, ...d.data()})); refreshFilters(); renderMinistries(); });
+            db.collection("users").onSnapshot(s => { state.users = s.docs.map(d => ({id: d.id, ...d.data()})); if(state.view==='admin') renderAdmin(); });
+        }
 
-        grid.innerHTML = filtered.map(m => `
-            <div class="card-min">
-                <div>
-                    <img src="${m.photo || 'https://via.placeholder.com/80?text=CCB'}" class="min-photo">
-                    <h4 style="font-weight:700;">${m.nome}</h4>
-                    <p style="color:var(--p-accent); font-weight:700; font-size:0.8rem;">${m.cargo}</p>
-                    <div style="font-size:0.8rem; color:var(--p-text-light); margin: 8px 0;">🏛 ${m.igreja} | 📍 ${m.cidade}</div>
-                </div>
-                <div style="font-size:0.9rem; font-weight:700; color: var(--p-dark); background:#f1f5f9; padding:8px; border-radius:8px; margin-top:10px;">
-                    <a href="https://wa.me/55${m.tel.replace(/\D/g, '')}" target="_blank" style="text-decoration:none; color:inherit;">
-                        📱 ${formatarWhatsApp(m.tel)}
-                    </a>
-                </div>
-                ${state.currentUser ? `
-                    <div style="margin-top:10px; display:flex; gap:5px">
-                        <button class="btn-ui btn-primary" style="flex:1; font-size:0.7rem" onclick="openModal('ministry', '${m.id}')">Editar</button>
-                        <button class="btn-ui" style="background:#fee2e2; color:#ef4444; flex:1; font-size:0.7rem" onclick="deleteItem('ministries', '${m.id}')">Excluir</button>
-                    </div>` : ''}
-            </div>`).join('');
-    }
+        function renderEvents() {
+            const city = document.getElementById('filterCidadeEvent').value;
+            const search = document.getElementById('searchEvents').value.toLowerCase();
+            const dia = document.getElementById('filterDiaEvent').value;
+            const grid = document.getElementById('eventGrid');
+            const emptyMsg = document.getElementById('eventEmptyMsg');
 
-    function formatarWhatsApp(tel) {
-        const num = tel.replace(/\D/g, '');
-        if (num.length === 11) return `(${num.slice(0, 2)}) ${num.slice(2, 7)}-${num.slice(7)}`;
-        if (num.length === 10) return `(${num.slice(0, 2)}) ${num.slice(2, 6)}-${num.slice(6)}`;
-        return tel;
-    }
+            if (!city && !dia) { grid.innerHTML = ""; emptyMsg.style.display = "block"; return; }
+            emptyMsg.style.display = "none";
 
-    function compartilharEvento(titulo, igreja, data, hora, endereco) {
-        const texto = `🅐 🅟🅐🅩 🅓🅔 🅓🅔🅤🅢\n\n*CONVITE ESPECIAL*\n\n🎵 *${titulo.toUpperCase()}*\n🏛 Comum: ${igreja}\n📅 Data: ${data}\n⏰ Hora: ${hora}\n📍 Local: ${endereco}\n\n_Veja em: ${window.location.href}_`;
-        if (navigator.share) navigator.share({ title: titulo, text: texto });
-        else { navigator.clipboard.writeText(texto); alert("Copiado!"); }
-    }
+            const filtered = state.events.filter(e => {
+                const matchCity = city ? e.cidadeEstado === city : true;
+                const matchDia = dia ? e.dataEnsaio === dia : true;
+                const matchSearch = e.titulo.toLowerCase().includes(search) || e.nomeIgreja.toLowerCase().includes(search);
+                const matchType = state.eventFilterType === 'all' || e.tipoEvento === state.eventFilterType;
+                return matchCity && matchDia && matchSearch && matchType;
+            });
 
-    // MODAL E PERSISTÊNCIA
-    function openModal(type, id = null) {
-        state.activeModalType = type;
-        state.editingId = id;
-        document.getElementById('modalOverlay').style.display = 'flex';
-        document.getElementById('fields-event').classList.toggle('hidden', type !== 'event');
-        document.getElementById('fields-ministry').classList.toggle('hidden', type !== 'ministry');
+            grid.innerHTML = filtered.map(e => `
+                <div class="card-event ${e.tipoEvento === 'especial' ? 'especial' : ''}">
+                    <div>
+                        <span style="font-size:0.6rem; font-weight:800; color:var(--p-accent); text-transform:uppercase;">${e.tipoEvento === 'especial' ? 'Evento' : 'Ensaio Local'}</span>
+                        <h3>${e.titulo}</h3>
+                        <p>🏛 ${e.nomeIgreja}</p>
+                        <div style="font-size:0.8rem; margin:5px 0;">📍 ${e.endereco}</div>
+                        <div style="font-size:0.8rem; font-weight:600;">🕒 ${e.dataEnsaio} - ${e.horarioEnsaio}</div>
+                        
+                        ${(e.encRegional || e.encLocal || e.examinadora) ? `
+                            <div class="enc-container">
+                                ${e.encRegional ? `<div><b>Reg:</b> ${e.encRegional}</div>` : ''}
+                                ${e.encLocal ? `<div><b>Loc:</b> ${e.encLocal}</div>` : ''}
+                                ${e.examinadora ? `<div><b>Exa:</b> ${e.examinadora}</div>` : ''}
+                            </div>
+                        ` : ''}
 
-        if (id) {
-            const item = type === 'event' ? state.events.find(x => x.id === id) : state.ministries.find(x => x.id === id);
-            if (type === 'event') {
-                document.getElementById('f_titulo').value = item.titulo;
-                document.getElementById('f_igreja').value = item.nomeIgreja;
-                document.getElementById('f_cidade').value = item.cidadeEstado;
-                document.getElementById('f_tipo').value = item.tipoEvento;
-                toggleDateInput();
-                if (item.tipoEvento === 'especial') {
-                    const partes = item.dataEnsaio.split('/');
-                    if (partes.length === 3) document.getElementById('f_data_especifica').value = `${partes[2]}-${partes[1]}-${partes[0]}`;
-                } else document.getElementById('f_dia').value = item.dataEnsaio;
-                document.getElementById('f_hora').value = item.horarioEnsaio;
-                document.getElementById('f_end').value = item.endereco;
-                document.getElementById('f_obs').value = item.obs || "";
-                document.getElementById('f_enc_regional').value = item.encRegional || "";
-                document.getElementById('f_enc_local').value = item.encLocal || "";
-                document.getElementById('f_examinadora').value = item.examinadora || "";
-            } else {
-                document.getElementById('f_m_nome').value = item.nome;
-                document.getElementById('f_m_cargo').value = item.cargo;
-                document.getElementById('f_m_igreja').value = item.igreja;
-                document.getElementById('f_m_cidade').value = item.cidade;
-                document.getElementById('f_m_tel').value = item.tel;
-                document.getElementById('f_m_photo').value = item.photo || "";
-                if (item.photo) { document.getElementById('img_preview').src = item.photo; document.getElementById('img_preview').style.display = 'block'; }
+                        ${e.obs ? `<div class="obs-container">Obs: ${e.obs}</div>` : ''}
+                    </div>
+                    <div class="card-actions">
+                        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.endereco + ',' + e.cidadeEstado)}" target="_blank" class="btn-card bg-maps">Maps</a>
+                        <a href="https://waze.com/ul?q=${encodeURIComponent(e.endereco)}" target="_blank" class="btn-card bg-waze">Waze</a>
+                        <a href="${gerarLinkCalendario(e)}" target="_blank" class="btn-card bg-calendar">Agenda</a>
+                        <button onclick="compartilharEvento('${e.titulo}', '${e.nomeIgreja}', '${e.dataEnsaio}', '${e.horarioEnsaio}', '${e.endereco}')" class="btn-card bg-share">Compartilhar</button>
+                    </div>
+                    ${state.currentUser ? `<button class="btn-ui btn-primary" style="margin-top:10px; width:100%; font-size:0.7rem" onclick="openModal('event', '${e.id}')">Editar</button>` : ''}
+                </div>`).join('');
+        }
+
+        function renderMinistries() {
+            const city = document.getElementById('filterCidadeMin').value;
+            const search = document.getElementById('searchMin').value.toLowerCase();
+            const grid = document.getElementById('minGrid');
+            const filtered = state.ministries.filter(m => (!city || m.cidade === city) && (m.nome.toLowerCase().includes(search) || m.cargo.toLowerCase().includes(search)));
+            grid.innerHTML = filtered.map(m => `
+                <div class="card-min">
+                    <div>
+                        <img src="${m.photo || 'https://via.placeholder.com/80?text=CCB'}" class="min-photo">
+                        <h4 style="font-weight:700;">${m.nome}</h4>
+                        <p style="color:var(--p-accent); font-weight:700; font-size:0.8rem;">${m.cargo}</p>
+                        <div style="font-size:0.8rem; color:var(--p-text-light); margin: 8px 0;">🏛 ${m.igreja} | 📍 ${m.cidade}</div>
+                    </div>
+                    <div style="font-size:0.9rem; font-weight:700; color: var(--p-dark); background:#f1f5f9; padding:8px; border-radius:8px; margin-top:10px;">
+                        Telefone ${formatarWhatsApp(m.tel)}
+                    </div>
+                    ${state.currentUser ? `<div style="margin-top:10px; display:flex; gap:5px"><button class="btn-ui btn-primary" style="flex:1; font-size:0.7rem" onclick="openModal('ministry', '${m.id}')">Editar</button><button class="btn-ui" style="background:#fee2e2; color:#ef4444; flex:1; font-size:0.7rem" onclick="deleteItem('ministries', '${m.id}')">Excluir</button></div>` : ''}
+                </div>`).join('');
+        }
+
+        async function processAuth() {
+            const u = document.getElementById('auth_user').value.trim();
+            const p = document.getElementById('auth_pass').value.trim();
+            const snapshot = await db.collection("users").where("user", "==", u).where("pass", "==", p).get();
+            if (!snapshot.empty) {
+                state.currentUser = { user: u, role: snapshot.docs[0].data().role };
+                localStorage.setItem('ccb_user_session', JSON.stringify(state.currentUser));
+                await registrarLog(u);
+                location.reload();
+            } else alert("Incorreto");
+        }
+
+        function renderAdmin() {
+            if (!state.currentUser || state.currentUser.role !== 'admin') return;
+            document.getElementById('userTable').innerHTML = state.users.map(u => `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between"><div>👤 ${u.user}</div><button onclick="deleteUser('${u.id}')" style="color:red; border:none; background:none">Excluir</button></div>`).join('');
+            db.collection("access_logs").orderBy("timestamp", "desc").limit(20).get().then(s => {
+                document.getElementById('logTable').innerHTML = s.docs.map(d => `<div style="padding:8px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between"><div><b>${d.data().usuario}</b></div><div style="font-size:0.7rem">${d.data().dataHora}</div></div>`).join('');
+            });
+        }
+
+        function refreshFilters() {
+            const cityEv = document.getElementById('filterCidadeEvent');
+            if (state.events.length > 0) {
+                const evCities = [...new Set(state.events.map(e => e.cidadeEstado))].sort();
+                cityEv.innerHTML = '<option value="">📍 Selecionar Cidade</option>' + evCities.map(c => `<option value="${c}">${c}</option>`).join('');
             }
-        } else {
-            document.getElementById('mainForm').reset();
-            document.getElementById('f_hora').value = "19:30";
-            document.getElementById('f_enc_regional').value = "";
-            document.getElementById('f_enc_local').value = "";
-            document.getElementById('f_examinadora').value = "";
-            document.getElementById('img_preview').style.display = 'none';
-            toggleDateInput();
-        }
-    }
-
-    async function saveData() {
-        const type = state.activeModalType;
-        const coll = type === 'event' ? 'events' : 'ministries';
-        
-        let data;
-        if (type === 'event') {
-            const t = document.getElementById('f_titulo').value;
-            const i = document.getElementById('f_igreja').value;
-            const c = document.getElementById('f_cidade').value;
-            if (!t || !i || !c) return alert("Preencha campos com *");
-
-            data = {
-                titulo: t,
-                nomeIgreja: i,
-                cidadeEstado: c,
-                dataEnsaio: document.getElementById('f_tipo').value === 'especial' ? document.getElementById('f_data_especifica').value.split('-').reverse().join('/') : document.getElementById('f_dia').value,
-                horarioEnsaio: document.getElementById('f_hora').value,
-                tipoEvento: document.getElementById('f_tipo').value,
-                endereco: document.getElementById('f_end').value,
-                obs: document.getElementById('f_obs').value,
-                encRegional: document.getElementById('f_enc_regional').value || "",
-                encLocal: document.getElementById('f_enc_local').value || "",
-                examinadora: document.getElementById('f_examinadora').value || ""
-            };
-        } else {
-            data = {
-                nome: document.getElementById('f_m_nome').value,
-                cargo: document.getElementById('f_m_cargo').value,
-                igreja: document.getElementById('f_m_igreja').value,
-                cidade: document.getElementById('f_m_cidade').value,
-                tel: document.getElementById('f_m_tel').value,
-                photo: document.getElementById('f_m_photo').value
-            };
+            const minCities = [...new Set(state.ministries.map(m => m.cidade))].sort();
+            document.getElementById('filterCidadeMin').innerHTML = '<option value="">📍 Filtrar por Cidade</option>' + minCities.map(c => `<option value="${c}">${c}</option>`).join('');
+            document.getElementById('f_dia').innerHTML = DIAS_LIST.map(d => `<option value="${d}">${d}</option>`).join('');
+            document.getElementById('filterDiaEvent').innerHTML = '<option value="">📅 Todos os Dias</option>' + DIAS_LIST.map(d => `<option value="${d}">${d}</option>`).join('');
         }
 
-        if(state.editingId) await db.collection(coll).doc(state.editingId).update(data);
-        else await db.collection(coll).add(data);
-        closeModal();
-    }
+        function openModal(type, id = null) {
+            state.activeModalType = type;
+            state.editingId = id;
+            document.getElementById('modalOverlay').style.display = 'flex';
+            document.getElementById('fields-event').classList.toggle('hidden', type !== 'event');
+            document.getElementById('fields-ministry').classList.toggle('hidden', type !== 'ministry');
 
-    // AUXILIARES E LOGIN
-    function toggleSidebar(show) { document.getElementById('sidebar').classList.toggle('active', show); document.getElementById('overlay').style.display = show ? 'block' : 'none'; }
-    function toggleDateInput() { const s = document.getElementById('f_tipo').value==='especial'; document.getElementById('f_dia').classList.toggle('hidden', s); document.getElementById('f_data_especifica').classList.toggle('hidden', !s); }
-    function closeModal() { document.getElementById('modalOverlay').style.display='none'; }
-    function logout() { localStorage.removeItem('ccb_user_session'); location.reload(); }
-    async function deleteItem(c, id) { if(confirm("Deseja realmente excluir?")) await db.collection(c).doc(id).delete(); }
-    function setFilterType(t, b) { state.eventFilterType=t; document.querySelectorAll('.seg-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); renderEvents(); }
-    function previewImage(i) { if(i.files && i.files[0]) { const r = new FileReader(); r.onload=e=>{document.getElementById('img_preview').src=e.target.result; document.getElementById('img_preview').style.display='block'; document.getElementById('f_m_photo').value=e.target.result;}; r.readAsDataURL(i.files[0]); } }
-
-    function refreshFilters() {
-        const cityEv = document.getElementById('filterCidadeEvent');
-        if (state.events.length > 0) {
-            const evCities = [...new Set(state.events.map(e => e.cidadeEstado))].sort();
-            cityEv.innerHTML = '<option value="">📍 Selecionar Cidade</option>' + evCities.map(c => `<option value="${c}">${c}</option>`).join('');
+            if (id) {
+                const item = type === 'event' ? state.events.find(x => x.id === id) : state.ministries.find(x => x.id === id);
+                if (type === 'event') {
+                    document.getElementById('f_titulo').value = item.titulo;
+                    document.getElementById('f_igreja').value = item.nomeIgreja;
+                    document.getElementById('f_cidade').value = item.cidadeEstado;
+                    document.getElementById('f_tipo').value = item.tipoEvento;
+                    toggleDateInput();
+                    if (item.tipoEvento === 'especial') {
+                        const partes = item.dataEnsaio.split('/');
+                        if (partes.length === 3) document.getElementById('f_data_especifica').value = `${partes[2]}-${partes[1]}-${partes[0]}`;
+                    } else document.getElementById('f_dia').value = item.dataEnsaio;
+                    document.getElementById('f_hora').value = item.horarioEnsaio;
+                    document.getElementById('f_end').value = item.endereco;
+                    document.getElementById('f_obs').value = item.obs || "";
+                    document.getElementById('f_enc_regional').value = item.encRegional || "";
+                    document.getElementById('f_enc_local').value = item.encLocal || "";
+                    document.getElementById('f_examinadora').value = item.examinadora || "";
+                } else {
+                    document.getElementById('f_m_nome').value = item.nome;
+                    document.getElementById('f_m_cargo').value = item.cargo;
+                    document.getElementById('f_m_igreja').value = item.igreja;
+                    document.getElementById('f_m_cidade').value = item.cidade;
+                    document.getElementById('f_m_tel').value = item.tel;
+                    document.getElementById('f_m_photo').value = item.photo || "";
+                    if (item.photo) { document.getElementById('img_preview').src = item.photo; document.getElementById('img_preview').style.display = 'block'; }
+                }
+            } else {
+                document.getElementById('mainForm').reset();
+                document.getElementById('f_hora').value = "19:30";
+                document.getElementById('f_enc_regional').value = "";
+                document.getElementById('f_enc_local').value = "";
+                document.getElementById('f_examinadora').value = "";
+                document.getElementById('img_preview').style.display = 'none';
+                toggleDateInput();
+            }
         }
-        const minCities = [...new Set(state.ministries.map(m => m.cidade))].sort();
-        document.getElementById('filterCidadeMin').innerHTML = '<option value="">📍 Filtrar por Cidade</option>' + minCities.map(c => `<option value="${c}">${c}</option>`).join('');
-        
-        document.getElementById('f_dia').innerHTML = DIAS_LIST.map(d => `<option value="${d}">${d}</option>`).join('');
-        document.getElementById('filterDiaEvent').innerHTML = '<option value="">📅 Todos os Dias</option>' + DIAS_LIST.map(d => `<option value="${d}">${d}</option>`).join('');
-    }
 
-    window.onload = () => {
-        if (state.currentUser) {
-            document.getElementById('navLogout').classList.remove('hidden');
-            document.getElementById('navLogin').classList.add('hidden');
-            document.getElementById('adminEventBtn').classList.remove('hidden');
-            document.getElementById('adminMinBtn').classList.remove('hidden');
-            if (state.currentUser.role === 'admin') document.getElementById('adminLink').classList.remove('hidden');
+        async function saveData() {
+            const type = state.activeModalType;
+            const coll = type === 'event' ? 'events' : 'ministries';
+            let data;
+            if (type === 'event') {
+                const t = document.getElementById('f_titulo').value;
+                const i = document.getElementById('f_igreja').value;
+                const c = document.getElementById('f_cidade').value;
+                if (!t || !i || !c) return alert("Preencha campos com *");
+
+                data = {
+                    titulo: t,
+                    nomeIgreja: i,
+                    cidadeEstado: c,
+                    dataEnsaio: document.getElementById('f_tipo').value === 'especial' ? document.getElementById('f_data_especifica').value.split('-').reverse().join('/') : document.getElementById('f_dia').value,
+                    horarioEnsaio: document.getElementById('f_hora').value,
+                    tipoEvento: document.getElementById('f_tipo').value,
+                    endereco: document.getElementById('f_end').value,
+                    obs: document.getElementById('f_obs').value,
+                    encRegional: document.getElementById('f_enc_regional').value || "",
+                    encLocal: document.getElementById('f_enc_local').value || "",
+                    examinadora: document.getElementById('f_examinadora').value || ""
+                };
+            } else {
+                data = {
+                    nome: document.getElementById('f_m_nome').value,
+                    cargo: document.getElementById('f_m_cargo').value,
+                    igreja: document.getElementById('f_m_igreja').value,
+                    cidade: document.getElementById('f_m_cidade').value,
+                    tel: document.getElementById('f_m_tel').value,
+                    photo: document.getElementById('f_m_photo').value
+                };
+            }
+            if(state.editingId) await db.collection(coll).doc(state.editingId).update(data);
+            else await db.collection(coll).add(data);
+            closeModal();
         }
-        startSync();
-    };
 
-    // Listeners
-    document.getElementById('searchEvents').addEventListener('input', renderEvents);
-    document.getElementById('filterCidadeEvent').addEventListener('change', renderEvents);
-    document.getElementById('filterDiaEvent').addEventListener('change', renderEvents);
-    document.getElementById('searchMin').addEventListener('input', renderMinistries);
-    document.getElementById('filterCidadeMin').addEventListener('change', renderMinistries);
-</script>
+        function formatarWhatsApp(tel) {
+            const num = tel.replace(/\D/g, '');
+            if (num.length === 11) return `(${num.slice(0, 2)}) ${num.slice(2, 7)}-${num.slice(7)}`;
+            if (num.length === 10) return `(${num.slice(0, 2)}) ${num.slice(2, 6)}-${num.slice(6)}`;
+            return tel;
+        }
+
+        function toggleDateInput() { const s = document.getElementById('f_tipo').value==='especial'; document.getElementById('f_dia').classList.toggle('hidden', s); document.getElementById('f_data_especifica').classList.toggle('hidden', !s); }
+        function closeModal() { document.getElementById('modalOverlay').style.display='none'; }
+        function logout() { localStorage.removeItem('ccb_user_session'); location.reload(); }
+        function previewImage(i) { if(i.files && i.files[0]) { const r = new FileReader(); r.onload=e=>{document.getElementById('img_preview').src=e.target.result; document.getElementById('img_preview').style.display='block'; document.getElementById('f_m_photo').value=e.target.result;}; r.readAsDataURL(i.files[0]); } }
+        async function deleteItem(c, id) { if(confirm("Excluir?")) await db.collection(c).doc(id).delete(); }
+        function setFilterType(t, b) { state.eventFilterType=t; document.querySelectorAll('.seg-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); renderEvents(); }
+        function compartilharEvento(titulo, igreja, data, hora, endereco) {
+            const texto = `🅐 🅟🅐🅩 🅓🅔 🅓🅔🅤🅢\n\n*CONVITE ESPECIAL*\n\n🎵 *${titulo.toUpperCase()}*\n🏛 Comum: ${igreja}\n📅 Data: ${data}\n⏰ Hora: ${hora}\n📍 Local: ${endereco}`;
+            if (navigator.share) navigator.share({ title: titulo, text: texto });
+            else { navigator.clipboard.writeText(texto); alert("Copiado!"); }
+        }
+
+        window.onload = () => {
+            if (state.currentUser) {
+                document.getElementById('navLogout').classList.remove('hidden');
+                document.getElementById('navLogin').classList.add('hidden');
+                document.getElementById('adminEventBtn').classList.remove('hidden');
+                document.getElementById('adminMinBtn').classList.remove('hidden');
+                if (state.currentUser.role === 'admin') document.getElementById('adminLink').classList.remove('hidden');
+            }
+            startSync();
+        };
+
+        document.getElementById('searchEvents').addEventListener('input', renderEvents);
+        document.getElementById('filterCidadeEvent').addEventListener('change', renderEvents);
+        document.getElementById('filterDiaEvent').addEventListener('change', renderEvents);
+        document.getElementById('searchMin').addEventListener('input', renderMinistries);
+        document.getElementById('filterCidadeMin').addEventListener('change', renderMinistries);
+    </script>
 </body>
 </html>
-
-
-
