@@ -311,7 +311,9 @@ async function forcarInstalacao() {
         // 1. Caso seja Evento Especial (DD/MM/YYYY)
         if (texto.includes('/')) {
             const p = texto.split('/');
-            return `${p[2]}${p[1]}${p[0]}T${e.horarioEnsaio.replace(':', '')}00`;
+            const dataPura = `${p[2]}${p[1]}${p[0]}`;
+            const horaPura = e.horarioEnsaio.replace(':', '').padStart(4, '0') + "00";
+            return dataPura + "T" + horaPura;
         }
 
         // 2. Caso seja Ensaio Local (1ª Segunda, etc)
@@ -342,8 +344,12 @@ async function forcarInstalacao() {
 
         let dataFinal = buscarNoMes(ano, mes);
 
-        // Se a data já passou (estamos em 06/03), pula para o próximo mês
-        if (dataFinal && dataFinal < hoje.setHours(0,0,0,0)) {
+        // Ajuste importante: Se hoje é dia 6 e a 2ª Segunda é dia 9, ele mantém dia 9.
+        // Se a data já passou (ex: 1ª Segunda foi dia 2), ele pula para Abril.
+        const hojeSemHora = new Date();
+        hojeSemHora.setHours(0,0,0,0);
+
+        if (dataFinal && dataFinal < hojeSemHora) {
             let proxMes = mes + 1;
             let proxAno = ano;
             if (proxMes > 11) { proxMes = 0; proxAno++; }
@@ -355,24 +361,26 @@ async function forcarInstalacao() {
         const y = dataFinal.getFullYear();
         const m = String(dataFinal.getMonth() + 1).padStart(2, '0');
         const d = String(dataFinal.getDate()).padStart(2, '0');
-        const h = e.horarioEnsaio.replace(':', '').padStart(4, '0') + "00";
+        const hStart = e.horarioEnsaio.replace(':', '').padStart(4, '0') + "00";
+        
+        // Calcula 2 horas depois para o fim
+        const horaH = parseInt(e.horarioEnsaio.split(':')[0]) + 2;
+        const horaM = e.horarioEnsaio.split(':')[1];
+        const hEnd = String(horaH).padStart(2, '0') + horaM + "00";
 
-        return `${y}${m}${d}T${h}`;
+        return { start: `${y}${m}${d}T${hStart}`, end: `${y}${m}${d}T${hEnd}` };
     };
 
-    const dataStart = calcularData(e.dataEnsaio);
-    if (!dataStart) return "#"; // Evita link quebrado se a data falhar
-
-    // Criar data de fim (2 horas depois)
-    const dataEnd = dataStart.split('T')[0] + "T" + (parseInt(dataStart.split('T')[1]) + 20000);
+    const datas = calcularData(e.dataEnsaio);
+    if (!datas) return "#";
 
     const baseUrl = "https://www.google.com/calendar/render?action=TEMPLATE";
     const titulo = encodeURIComponent(e.titulo);
     const local = encodeURIComponent(e.endereco + ", " + e.cidadeEstado);
-    const detalhes = encodeURIComponent(`Igreja: ${e.nomeIgreja}\nObs: ${e.obs || ''}`);
+    const detalhes = encodeURIComponent(`Igreja: ${e.nomeIgreja}\n${e.obs || ''}`);
 
-    // AQUI ESTÁ A CHAVE: O parâmetro &dates=
-    return `${baseUrl}&text=${titulo}&dates=${dataStart}/${dataEnd}&details=${detalhes}&location=${local}`;
+    // FORMATO DO LINK: dates=START/END (Obrigatório para o Google não resetar para hoje)
+    return `${baseUrl}&text=${titulo}&dates=${datas.start}/${datas.end}&details=${detalhes}&location=${local}`;
 }
         async function registrarLog(usuario) {
             try {
@@ -624,6 +632,7 @@ async function forcarInstalacao() {
     </script>
 </body>
 </html>
+
 
 
 
