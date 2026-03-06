@@ -65,9 +65,9 @@
         .seg-btn { flex: 1; border: none; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 600; color: var(--p-text-light); transition: 0.2s; }
         .seg-btn.active { background: var(--p-white); color: var(--p-dark); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
 
-        .card-grid { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+        .card-grid { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
         
-        .card-event { background: white; padding: 1.5rem; border-radius: 15px; border: 1px solid var(--p-border); border-top: 5px solid var(--p-dark); display: flex; flex-direction: column; justify-content: space-between; min-height: 280px; }
+        .card-event { background: white; padding: 1.8rem; gap: 12px, border-radius: 15px; border: 1px solid var(--p-border); border-top: 5px solid var(--p-dark); display: flex; flex-direction: column; justify-content: space-between; min-height: 340px; }
         .card-event.especial { border-top-color: var(--p-accent); }
         
         .card-min { background: white; border-radius: 15px; padding: 2rem 1.5rem; text-align: center; border: 1px solid var(--p-border); box-shadow: var(--shadow); display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
@@ -76,7 +76,7 @@
         .obs-container { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--p-border); font-size: 0.8rem; font-style: italic; color: var(--p-text-light); }
         .enc-container { margin-top: 10px; padding: 8px; background: #f8fafc; border-radius: 8px; font-size: 0.75rem; border: 1px solid var(--p-border); }
 
-        .card-actions { margin-top: auto; padding-top: 15px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .card-actions { margin-top: auto; padding-top: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
         .btn-card { padding: 8px; border-radius: 6px; text-decoration: none; text-align: center; font-size: 0.7rem; font-weight: 700; color: white; display: flex; align-items: center; justify-content: center; border: none; }
         .bg-maps { background: #4285F4; }
         .bg-waze { background: #007291; color: #ffffff; }
@@ -489,9 +489,13 @@ async function forcarInstalacao() {
                     <div>
                         <span style="font-size:0.6rem; font-weight:800; color:var(--p-accent); text-transform:uppercase;">${e.tipoEvento === 'especial' ? 'Evento' : 'Ensaio Local'}</span>
                         <h3>${e.titulo}</h3>
+                        
                         <p>🏛 ${e.nomeIgreja}</p>
+                        
                         <p style="font-size: 0.85rem; color: var(--p-text-light); font-weight: 500;">📍 ${e.cidadeEstado}</p>
+                        
                         <div style="font-size:0.8rem; margin:5px 0;">🗺️ ${e.endereco}</div>
+                        
                         <div style="font-size:0.8rem; font-weight:600;">🕒 ${e.dataEnsaio} - ${e.horarioEnsaio}</div>
                         
                         ${(e.encRegional || e.encLocal || e.examinadora) ? `
@@ -687,6 +691,7 @@ async function forcarInstalacao() {
     </script>
 </body>
 </html>
+
 
 
 
