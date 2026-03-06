@@ -490,7 +490,8 @@ async function forcarInstalacao() {
                         <span style="font-size:0.6rem; font-weight:800; color:var(--p-accent); text-transform:uppercase;">${e.tipoEvento === 'especial' ? 'Evento' : 'Ensaio Local'}</span>
                         <h3>${e.titulo}</h3>
                         <p>🏛 ${e.nomeIgreja}</p>
-                        <div style="font-size:0.8rem; margin:5px 0;">📍 ${e.endereco}</div>
+                        <p style="font-size: 0.85rem; color: var(--p-text-light); font-weight: 500;">📍 ${e.cidadeEstado}</p>
+                        <div style="font-size:0.8rem; margin:5px 0;">🗺️ ${e.endereco}</div>
                         <div style="font-size:0.8rem; font-weight:600;">🕒 ${e.dataEnsaio} - ${e.horarioEnsaio}</div>
                         
                         ${(e.encRegional || e.encLocal || e.examinadora) ? `
@@ -686,6 +687,7 @@ async function forcarInstalacao() {
     </script>
 </body>
 </html>
+
 
 
 
