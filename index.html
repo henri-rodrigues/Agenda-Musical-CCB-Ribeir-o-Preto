@@ -1072,7 +1072,7 @@
         async function deleteItem(c, id) { if (confirm("Excluir?")) await db.collection(c).doc(id).delete(); }
         function setFilterType(t, b) { state.eventFilterType = t; document.querySelectorAll('.seg-btn').forEach(x => x.classList.remove('active')); b.classList.add('active'); renderEvents(); }
         function compartilharEvento(titulo, igreja, data, hora, endereco) {
-            const texto = `🅐 🅟🅐🅩 🅓🅔 🅓🅔🅤🅢\n\n*CONVITE ESPECIAL*\n\n🎵 *${titulo.toUpperCase()}*\n🏛 Comum: ${igreja}\n📅 Data: ${data}\n⏰ Hora: ${hora}\n📍 Local: ${endereco}`;
+            const texto = `🅐 🅟🅐🅩 🅓🅔 🅓🅔🅤🅢\n\n*CONVITE ESPECIAL*\n\n🎵 *${titulo.toUpperCase()}*\n🏛 Comum: ${igreja}\n📅 Data: ${data}\n⏰ Hora: ${hora}\n📍 Local: ${endereco}\n\n*Músicos, Organistas, Encarregados, Aprendiz e Toda irmandade estão convidados para juntos louvarmos ao nosso Deus!!*\n🎼Venha se alegrar conosco na presença de Deus!!`;
             if (navigator.share) navigator.share({ title: titulo, text: texto });
             else { navigator.clipboard.writeText(texto); alert("Copiado!"); }
         }
@@ -1115,5 +1115,6 @@
 </body>
 
 </html>
+
 
 
