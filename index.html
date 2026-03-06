@@ -302,57 +302,107 @@ async function forcarInstalacao() {
 
         // 4. MELHORIA: LINK PARA AGENDA
      function gerarLinkCalendario(e) {
+
     const calcularData = (texto) => {
+
+        if (!texto) return null;
+
         const hoje = new Date();
         const ano = hoje.getFullYear();
         const mes = hoje.getMonth();
-        const diasSemana = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 
-        // 1. Caso seja Evento Especial (DD/MM/YYYY)
+        const diasSemana = {
+            domingo: 0,
+            segunda: 1,
+            terca: 2,
+            terça: 2,
+            quarta: 3,
+            quinta: 4,
+            sexta: 5,
+            sabado: 6,
+            sábado: 6
+        };
+
+        const horario = e.horarioEnsaio || "19:30";
+        const [hora, minuto] = horario.split(":").map(Number);
+
+        const hStart = String(hora).padStart(2, '0') + String(minuto).padStart(2, '0') + "00";
+
+        const horaFim = (hora + 2) % 24;
+        const hEnd = String(horaFim).padStart(2, '0') + String(minuto).padStart(2, '0') + "00";
+
+        // EVENTO ESPECIAL (DD/MM/YYYY)
         if (texto.includes('/')) {
+
             const p = texto.split('/');
-            const dataPura = `${p[2]}${p[1]}${p[0]}`;
-            const horaPura = e.horarioEnsaio.replace(':', '').padStart(4, '0') + "00";
-            return dataPura + "T" + horaPura;
+            const data = new Date(p[2], p[1] - 1, p[0]);
+
+            const y = data.getFullYear();
+            const m = String(data.getMonth() + 1).padStart(2, '0');
+            const d = String(data.getDate()).padStart(2, '0');
+
+            return {
+                start: `${y}${m}${d}T${hStart}`,
+                end: `${y}${m}${d}T${hEnd}`
+            };
         }
 
-        // 2. Caso seja Ensaio Local (1ª Segunda, etc)
+        // ENSAIO PADRÃO (ex: 1ª Segunda)
         const partes = texto.trim().split(/\s+/);
-        const ordemTexto = partes[0]; 
-        const diaNome = partes[1];   
-        const diaIndex = diasSemana.indexOf(diaNome);
 
-        if (diaIndex === -1) return null;
+        if (partes.length < 2) return null;
+
+        const ordemTexto = partes[0].toLowerCase();
+        const diaNome = partes[1].toLowerCase();
+
+        const diaIndex = diasSemana[diaNome];
+
+        if (diaIndex === undefined) return null;
 
         const buscarNoMes = (anoAlvo, mesAlvo) => {
+
             let ocorrencias = 0;
             let ultimaData = null;
-            const eUltima = ordemTexto.includes("Últ") || ordemTexto.includes("Ult");
-            const nOrdem = parseInt(ordemTexto);
+
+            const eUltima = ordemTexto.includes("ult");
+
+            const nOrdem = parseInt(ordemTexto.replace(/\D/g, ''));
 
             for (let d = 1; d <= 31; d++) {
-                let dataT = new Date(anoAlvo, mesAlvo, d);
+
+                const dataT = new Date(anoAlvo, mesAlvo, d);
+
                 if (dataT.getMonth() !== mesAlvo) break;
+
                 if (dataT.getDay() === diaIndex) {
+
                     ocorrencias++;
                     ultimaData = new Date(dataT);
-                    if (!eUltima && ocorrencias === nOrdem) return dataT;
+
+                    if (!eUltima && ocorrencias === nOrdem) {
+                        return dataT;
+                    }
                 }
             }
+
             return eUltima ? ultimaData : null;
         };
 
         let dataFinal = buscarNoMes(ano, mes);
 
-        // Ajuste importante: Se hoje é dia 6 e a 2ª Segunda é dia 9, ele mantém dia 9.
-        // Se a data já passou (ex: 1ª Segunda foi dia 2), ele pula para Abril.
         const hojeSemHora = new Date();
         hojeSemHora.setHours(0,0,0,0);
 
         if (dataFinal && dataFinal < hojeSemHora) {
+
             let proxMes = mes + 1;
             let proxAno = ano;
-            if (proxMes > 11) { proxMes = 0; proxAno++; }
+
+            if (proxMes > 11) {
+                proxMes = 0;
+                proxAno++;
+            }
+
             dataFinal = buscarNoMes(proxAno, proxMes);
         }
 
@@ -361,25 +411,29 @@ async function forcarInstalacao() {
         const y = dataFinal.getFullYear();
         const m = String(dataFinal.getMonth() + 1).padStart(2, '0');
         const d = String(dataFinal.getDate()).padStart(2, '0');
-        const hStart = e.horarioEnsaio.replace(':', '').padStart(4, '0') + "00";
-        
-        // Calcula 2 horas depois para o fim
-        const horaH = parseInt(e.horarioEnsaio.split(':')[0]) + 2;
-        const horaM = e.horarioEnsaio.split(':')[1];
-        const hEnd = String(horaH).padStart(2, '0') + horaM + "00";
 
-        return { start: `${y}${m}${d}T${hStart}`, end: `${y}${m}${d}T${hEnd}` };
+        return {
+            start: `${y}${m}${d}T${hStart}`,
+            end: `${y}${m}${d}T${hEnd}`
+        };
     };
 
     const datas = calcularData(e.dataEnsaio);
+
     if (!datas) return "#";
 
     const baseUrl = "https://www.google.com/calendar/render?action=TEMPLATE";
-    const titulo = encodeURIComponent(e.titulo);
-    const local = encodeURIComponent(e.endereco + ", " + e.cidadeEstado);
-    const detalhes = encodeURIComponent(`Igreja: ${e.nomeIgreja}\n${e.obs || ''}`);
 
-    // FORMATO DO LINK: dates=START/END (Obrigatório para o Google não resetar para hoje)
+    const titulo = encodeURIComponent(e.titulo || "Ensaio CCB");
+
+    const local = encodeURIComponent(
+        (e.endereco || "") + ", " + (e.cidadeEstado || "")
+    );
+
+    const detalhes = encodeURIComponent(
+        `Igreja: ${e.nomeIgreja || ""}\n${e.obs || ""}`
+    );
+
     return `${baseUrl}&text=${titulo}&dates=${datas.start}/${datas.end}&details=${detalhes}&location=${local}`;
 }
         async function registrarLog(usuario) {
@@ -632,6 +686,7 @@ async function forcarInstalacao() {
     </script>
 </body>
 </html>
+
 
 
 
