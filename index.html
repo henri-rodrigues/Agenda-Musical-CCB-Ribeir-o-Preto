@@ -575,7 +575,6 @@
         
         <div class="segmented-control" style="margin-top: 10px;">
             <button class="seg-btn-min active" onclick="setMinFilterRole('all', this)">Todos</button>
-            <button class="seg-btn-min" onclick="setMinFilterRole('Encarregado Local', this)">Local</button>
             <button class="seg-btn-min" onclick="setMinFilterRole('Encarregado Regional', this)">Regional</button>
             <button class="seg-btn-min" onclick="setMinFilterRole('Examinadora', this)">Examinadora</button>
         </div>
@@ -958,17 +957,30 @@
                 </div>`).join('');
         }
 
-        function renderMinistries() {
+       function renderMinistries() {
     const city = document.getElementById('filterCidadeMin').value;
     const search = document.getElementById('searchMin').value.toLowerCase();
     const grid = document.getElementById('minGrid');
     
     const filtered = state.ministries.filter(m => {
         const matchCity = !city || m.cidade === city;
-        const matchSearch = m.nome.toLowerCase().includes(search);
+        
+        // CORREÇÃO AQUI: Agora ele pesquisa no Nome E no Cargo
+        const nome = (m.nome || "").toLowerCase();
+        const cargo = (m.cargo || "").toLowerCase();
+        const matchSearch = nome.includes(search) || cargo.includes(search);
+        
+        // Filtro do botão segmentado
         const matchRole = state.minFilterRole === 'all' || m.cargo === state.minFilterRole;
+        
         return matchCity && matchSearch && matchRole;
     });
+
+    // Se não houver resultados, mostra uma mensagem amigável
+    if (filtered.length === 0) {
+        grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--p-text-light);">Nenhum ministério encontrado com esses filtros.</div>`;
+        return;
+    }
 
     grid.innerHTML = filtered.map(m => `
         <div class="card-min">
@@ -983,7 +995,7 @@
                 <div style="font-size:0.8rem; color:var(--p-text-light); margin: 8px 0;">🏛 ${m.igreja} | 📍 ${m.cidade}</div>
             </div>
             <div style="font-size:0.9rem; font-weight:700; color: var(--p-dark); background:#f1f5f9; padding:8px; border-radius:8px; margin-top:10px;">
-                Telefone ${formatarWhatsApp(m.tel)}
+                Telefone ${formatarWhatsApp(m.tel || "")}
             </div>
             ${state.currentUser ? `
                 <div style="margin-top:10px; display:flex; gap:5px">
@@ -1166,6 +1178,7 @@
 </body>
 
 </html>
+
 
 
 
