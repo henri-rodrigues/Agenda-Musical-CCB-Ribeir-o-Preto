@@ -352,6 +352,15 @@
             gap: 5px;
             transition: all .2s ease;
         }
+        .min-photo { 
+    width: 80px; 
+    height: 80px; 
+    border-radius: 50%; 
+    border: 3px solid var(--p-accent); 
+    margin-bottom: 1rem; 
+    object-fit: cover; 
+    background-color: #f1f5f9; /* Cor de fundo caso a imagem falhe */
+}
 
         .btn-hoje {
             width: 100%;
@@ -930,7 +939,12 @@
             grid.innerHTML = filtered.map(m => `
                 <div class="card-min">
                     <div>
-                        <img src="${m.photo || 'https://via.placeholder.com/80?text=CCB'}" class="min-photo">
+                        <img
+                        src="${m.photo ? m.photo : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" 
+                        class="min-photo" 
+                        onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"
+                        alt="Perfil"
+                        >
                         <h4 style="font-weight:700;">${m.nome}</h4>
                         <p style="color:var(--p-accent); font-weight:700; font-size:0.8rem;">${m.cargo}</p>
                         <div style="font-size:0.8rem; color:var(--p-text-light); margin: 8px 0;">🏛 ${m.igreja} | 📍 ${m.cidade}</div>
@@ -1115,6 +1129,7 @@
 </body>
 
 </html>
+
 
 
 
