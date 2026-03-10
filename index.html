@@ -478,6 +478,23 @@
             display: block;
             animation: fadeIn 0.3s ease;
         }
+        .ministry-divider {
+    grid-column: 1 / -1; /* Ocupa a largura toda da grade */
+    padding: 15px 0;
+    margin: 10px 0;
+    border-bottom: 2px solid var(--p-accent);
+    color: var(--p-dark);
+    font-family: 'Poppins';
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ministry-divider svg {
+    color: var(--p-accent);
+}
 
         @keyframes fadeIn {
             from {
@@ -904,16 +921,18 @@
             db.collection("ministries").onSnapshot(s => { state.ministries = s.docs.map(d => ({ id: d.id, ...d.data() })); refreshFilters(); renderMinistries(); });
             db.collection("users").onSnapshot(s => { state.users = s.docs.map(d => ({ id: d.id, ...d.data() })); if (state.view === 'admin') renderAdmin(); });
         }
-        function converterParaDataReal(textoData, horario) {
+       function converterParaDataReal(textoData, horario) {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
     const [hora, minuto] = (horario || "00:00").split(':').map(Number);
 
+    // 1. Caso seja Data Fixa (ex: 22/03/2026)
     if (textoData && textoData.includes('/')) {
         const [d, m, a] = textoData.split('/').map(Number);
         return new Date(a, m - 1, d, hora, minuto);
     }
 
+    // 2. Caso seja Recorrente (ex: 1ª Segunda, Última Sexta)
     const diasSemanaMap = { domingo: 0, segunda: 1, terca: 2, terça: 2, quarta: 3, quinta: 4, sexta: 5, sabado: 6, sábado: 6 };
     const partes = textoData.trim().toLowerCase().split(/\s+/);
     if (partes.length < 2) return new Date(2099, 11, 31);
@@ -925,33 +944,37 @@
     if (diaIndex === undefined) return new Date(2099, 11, 31);
 
     const buscarNoMes = (anoAlvo, mesAlvo) => {
-        let ocorrencias = 0;
-        let ultimaData = null;
-        const nOrdem = parseInt(ordemTexto.replace(/\D/g, '')) || 0;
-        const eUltima = ordemTexto.includes("ult");
-
+        let ocorrencias = [];
+        // Percorre todos os dias do mês para mapear as ordens reais
         for (let d = 1; d <= 31; d++) {
             const dataT = new Date(anoAlvo, mesAlvo, d, hora, minuto);
             if (dataT.getMonth() !== mesAlvo) break;
             if (dataT.getDay() === diaIndex) {
-                ocorrencias++;
-                ultimaData = new Date(dataT);
-                if (!eUltima && ocorrencias === nOrdem) return dataT;
+                ocorrencias.push(new Date(dataT));
             }
         }
-        return eUltima ? ultimaData : null;
+
+        if (ordemTexto.includes("ult")) {
+            return ocorrencias[ocorrencias.length - 1]; // Pega a última ocorrência real
+        } else {
+            const nOrdem = parseInt(ordemTexto.replace(/\D/g, '')) || 1;
+            return ocorrencias[nOrdem - 1] || null; // Pega a 1ª, 2ª, 3ª ou 4ª
+        }
     };
 
     let dataFinal = buscarNoMes(hoje.getFullYear(), hoje.getMonth());
-    if (!dataFinal || dataFinal < hoje) {
+    
+    // Se a data calculada já passou (ou é hoje mas o horário já foi), pula para o mês seguinte
+    const agoraCompleto = new Date();
+    if (!dataFinal || dataFinal < agoraCompleto) {
         let proxMes = hoje.getMonth() + 1;
         let proxAno = hoje.getFullYear();
         if (proxMes > 11) { proxMes = 0; proxAno++; }
         dataFinal = buscarNoMes(proxAno, proxMes);
     }
+
     return dataFinal || new Date(2099, 11, 31);
 }
-
        function renderEvents() {
     const city = document.getElementById('filterCidadeEvent').value;
     const search = document.getElementById('searchEvents').value.toLowerCase();
@@ -1012,27 +1035,28 @@
     const search = document.getElementById('searchMin').value.toLowerCase();
     const grid = document.getElementById('minGrid');
     
-    const filtered = state.ministries.filter(m => {
+    // 1. Filtro Inicial
+    let filtered = state.ministries.filter(m => {
         const matchCity = !city || m.cidade === city;
-        
-        // CORREÇÃO AQUI: Agora ele pesquisa no Nome E no Cargo
         const nome = (m.nome || "").toLowerCase();
         const cargo = (m.cargo || "").toLowerCase();
         const matchSearch = nome.includes(search) || cargo.includes(search);
-        
-        // Filtro do botão segmentado
         const matchRole = state.minFilterRole === 'all' || m.cargo === state.minFilterRole;
-        
         return matchCity && matchSearch && matchRole;
     });
 
-    // Se não houver resultados, mostra uma mensagem amigável
-    if (filtered.length === 0) {
-        grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--p-text-light);">Nenhum ministério encontrado com esses filtros.</div>`;
-        return;
-    }
+    // 2. Ordenação Alfabética por Nome
+    filtered.sort((a, b) => (a.nome || "").localeCompare(b.nome || ""));
 
-    grid.innerHTML = filtered.map(m => `
+    // 3. Separação por Grupos (Regional primeiro, depois Examinadoras)
+    const regionais = filtered.filter(m => m.cargo === 'Encarregado Regional');
+    const examinadoras = filtered.filter(m => m.cargo === 'Examinadora');
+    const outros = filtered.filter(m => m.cargo !== 'Encarregado Regional' && m.cargo !== 'Examinadora');
+
+    let htmlOutput = "";
+
+    // Função auxiliar para gerar o card
+    const gerarCard = (m) => `
         <div class="card-min">
             <div>
                 <img 
@@ -1053,7 +1077,29 @@
                     <button class="btn-ui" style="background:#fee2e2; color:#ef4444; flex:1; font-size:0.7rem" onclick="deleteItem('ministries', '${m.id}')">Excluir</button>
                 </div>
             ` : ''}
-        </div>`).join('');
+        </div>`;
+
+    // Montagem do HTML com Divisões
+    if (regionais.length > 0) {
+        htmlOutput += `<div class="ministry-divider">💼 Encarregados Regionais</div>`;
+        htmlOutput += regionais.map(m => gerarCard(m)).join('');
+    }
+
+    if (examinadoras.length > 0) {
+        htmlOutput += `<div class="ministry-divider">🎼 Examinadoras</div>`;
+        htmlOutput += examinadoras.map(m => gerarCard(m)).join('');
+    }
+
+    if (outros.length > 0) {
+        htmlOutput += `<div class="ministry-divider">🎻 Outros Ministérios</div>`;
+        htmlOutput += outros.map(m => gerarCard(m)).join('');
+    }
+
+    if (htmlOutput === "") {
+        grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--p-text-light);">Nenhum resultado encontrado.</div>`;
+    } else {
+        grid.innerHTML = htmlOutput;
+    }
 }
         async function processAuth() {
             const u = document.getElementById('auth_user').value.trim();
@@ -1228,6 +1274,7 @@
 </body>
 
 </html>
+
 
 
 
