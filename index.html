@@ -1009,13 +1009,14 @@
 
         // 2. Se estão no MESMO MÊS, forçamos a ordem das semanas (1ª < 2ª < 3ª < 4ª < Última)
         const obterPesoSemana = (texto) => {
-            const t = texto.toLowerCase();
-            if (t.includes("1ª") || t.includes("1º")) return 1;
-            if (t.includes("2ª") || t.includes("2º")) return 2;
-            if (t.includes("3ª") || t.includes("3º")) return 3;
-            if (t.includes("4ª") || t.includes("4º") || t.includes("ult")) return 4;
-            return 0; // Eventos com data fixa (especiais)
-        };
+    const t = texto.toLowerCase();
+    if (t.includes("1ª") || t.includes("1º")) return 1;
+    if (t.includes("2ª") || t.includes("2º")) return 2;
+    if (t.includes("3ª") || t.includes("3º")) return 3;
+    if (t.includes("4ª") || t.includes("4º")) return 4;
+    if (t.includes("ult")) return 5; // Peso 5 garante que vem por último no mês
+    return 6; // Eventos especiais/fixos ficam após as recorrências do mês
+};
 
         const pesoA = obterPesoSemana(a.dataEnsaio);
         const pesoB = obterPesoSemana(b.dataEnsaio);
@@ -1301,6 +1302,7 @@
 </body>
 
 </html>
+
 
 
 
