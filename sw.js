@@ -1,9 +1,10 @@
-const CACHE_NAME = 'agenda-musical-v6';
+const CACHE_NAME = 'agenda-musical-v7';
 
 // Arquivos que serão salvos no celular do usuário
 const assets = [
   './',
   './index.html',
+  './gem.html',
   './manifest.json',
   'https://upload.wikimedia.org/wikipedia/commons/3/3e/Logo_oficial_CCB.png',
   'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700&display=swap'
