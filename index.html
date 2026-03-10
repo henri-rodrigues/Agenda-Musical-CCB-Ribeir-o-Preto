@@ -531,6 +531,7 @@
         <h2>Menu Musical</h2>
         <a class="nav-link" onclick="navigate('events')">📅 Eventos</a>
         <a class="nav-link" onclick="navigate('ministries')">🎻 Ministérios</a>
+        <a class="nav-link" href="gem.html">🎓 GEM</a>
         <a id="adminLink" class="nav-link hidden" onclick="navigate('admin')">🔐 Administração</a>
         <a id="navLogin" class="nav-link" onclick="navigate('login')">👤 Entrar</a>
         <a id="navLogout" class="nav-link hidden" onclick="logout()">🚪 Sair</a>
@@ -606,10 +607,12 @@
                 </select>
 
                 <div class="segmented-control" style="margin-top: 10px;">
-                    <button class="seg-btn-min active" onclick="setMinFilterRole('all', this)">Todos</button>
-                    <button class="seg-btn-min"
-                        onclick="setMinFilterRole('Encarregado Regional', this)">Regional</button>
+                    <button class="seg-btn-min active" onclick="setMinFilterRole('Ancião', this)">Ancião</button>
+                    <button class="seg-btn-min" onclick="setMinFilterRole('Encarregado Regional', this)">Regional</button>
                     <button class="seg-btn-min" onclick="setMinFilterRole('Examinadora', this)">Examinadora</button>
+                </div>
+                <div id="minEmptyMsg" style="text-align: center; padding: 4rem 1rem; color: var(--p-text-light);">
+                    Selecione um ministério acima para visualizar os contatos.
                 </div>
             </div>
             <div id="minGrid" class="card-grid"></div>
@@ -726,7 +729,7 @@
             view: 'events',
             currentUser: JSON.parse(localStorage.getItem('ccb_user_session')) || null,
             eventFilterType: 'all',
-            minFilterRole: 'all', // Certifique-se de que esta vírgula existe
+            minFilterRole: '', // Certifique-se de que esta vírgula existe
             events: [],
             ministries: [],
             users: [],
@@ -1075,33 +1078,45 @@
             ${state.currentUser ? `<button class="btn-ui btn-primary" style="margin-top:10px; width:100%; font-size:0.7rem" onclick="openModal('event', '${e.id}')">Editar</button>` : ''}
         </div>`).join('');
         }
+
+        
         function renderMinistries() {
-            const city = document.getElementById('filterCidadeMin').value;
-            const search = document.getElementById('searchMin').value.toLowerCase();
-            const grid = document.getElementById('minGrid');
+    const city = document.getElementById('filterCidadeMin').value;
+    const search = document.getElementById('searchMin').value.toLowerCase();
+    const grid = document.getElementById('minGrid');
+    
+    // --- NOVA TRAVA: Se não selecionou um cargo específico, não mostra nada ---
+    if (state.minFilterRole === 'all' || !state.minFilterRole) {
+        grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 4rem 1rem; color: var(--p-text-light);">
+            <p style="font-size: 1.2rem;">🔍</p>
+            <p>Selecione um ministério acima para visualizar os contatos.</p>
+        </div>`;
+        return;
+    }
 
-            // 1. Filtro Inicial
-            let filtered = state.ministries.filter(m => {
-                const matchCity = !city || m.cidade === city;
-                const nome = (m.nome || "").toLowerCase();
-                const cargo = (m.cargo || "").toLowerCase();
-                const matchSearch = nome.includes(search) || cargo.includes(search);
-                const matchRole = state.minFilterRole === 'all' || m.cargo === state.minFilterRole;
-                return matchCity && matchSearch && matchRole;
-            });
+    let filtered = state.ministries.filter(m => {
+        const matchCity = !city || m.cidade === city;
+        const nome = (m.nome || "").toLowerCase();
+        const cargo = (m.cargo || "").toLowerCase();
+        const matchSearch = nome.includes(search) || cargo.includes(search);
+        
+        // Agora o matchRole é estrito ao botão clicado
+        const matchRole = m.cargo === state.minFilterRole;
+        
+        return matchCity && matchSearch && matchRole;
+    });
 
-            // 2. Ordenação Alfabética por Nome
-            filtered.sort((a, b) => (a.nome || "").localeCompare(b.nome || ""));
+    filtered.sort((a, b) => (a.nome || "").localeCompare(b.nome || ""));
 
-            // 3. Separação por Grupos (Regional primeiro, depois Examinadoras)
-            const regionais = filtered.filter(m => m.cargo === 'Encarregado Regional');
-            const examinadoras = filtered.filter(m => m.cargo === 'Examinadora');
-            const outros = filtered.filter(m => m.cargo !== 'Encarregado Regional' && m.cargo !== 'Examinadora');
+    // SEPARAÇÃO POR GRUPOS (Para manter a organização visual)
+    const anciaes = filtered.filter(m => m.cargo === 'Ancião');
+    const regionais = filtered.filter(m => m.cargo === 'Encarregado Regional');
+    const examinadoras = filtered.filter(m => m.cargo === 'Examinadora');
+    const outros = filtered.filter(m => m.cargo !== 'Ancião' && m.cargo !== 'Encarregado Regional' && m.cargo !== 'Examinadora');
 
-            let htmlOutput = "";
+    let htmlOutput = "";
 
-            // Função auxiliar para gerar o card
-            const gerarCard = (m) => `
+    const gerarCard = (m) => `
         <div class="card-min">
             <div>
                 <img 
@@ -1124,28 +1139,32 @@
             ` : ''}
         </div>`;
 
-            // Montagem do HTML com Divisões
-            if (regionais.length > 0) {
-                htmlOutput += `<div class="ministry-divider">💼 Encarregados Regionais</div>`;
-                htmlOutput += regionais.map(m => gerarCard(m)).join('');
-            }
+    if (anciaes.length > 0) {
+        htmlOutput += `<div class="ministry-divider">📖 Anciães</div>`;
+        htmlOutput += anciaes.map(m => gerarCard(m)).join('');
+    }
+    
+    if (regionais.length > 0) {
+        htmlOutput += `<div class="ministry-divider">💼 Encarregados Regionais</div>`;
+        htmlOutput += regionais.map(m => gerarCard(m)).join('');
+    }
 
-            if (examinadoras.length > 0) {
-                htmlOutput += `<div class="ministry-divider">🎼 Examinadoras</div>`;
-                htmlOutput += examinadoras.map(m => gerarCard(m)).join('');
-            }
+    if (examinadoras.length > 0) {
+        htmlOutput += `<div class="ministry-divider">🎼 Examinadoras</div>`;
+        htmlOutput += examinadoras.map(m => gerarCard(m)).join('');
+    }
 
-            if (outros.length > 0) {
-                htmlOutput += `<div class="ministry-divider">🎻 Outros Ministérios</div>`;
-                htmlOutput += outros.map(m => gerarCard(m)).join('');
-            }
+    if (outros.length > 0) {
+        htmlOutput += `<div class="ministry-divider">🎻 Outros Ministérios</div>`;
+        htmlOutput += outros.map(m => gerarCard(m)).join('');
+    }
 
-            if (htmlOutput === "") {
-                grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--p-text-light);">Nenhum resultado encontrado.</div>`;
-            } else {
-                grid.innerHTML = htmlOutput;
-            }
-        }
+    if (htmlOutput === "") {
+        grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--p-text-light);">Nenhum resultado encontrado para este cargo.</div>`;
+    } else {
+        grid.innerHTML = htmlOutput;
+    }
+}
         async function processAuth() {
             const u = document.getElementById('auth_user').value.trim();
             const p = document.getElementById('auth_pass').value.trim();
@@ -1276,7 +1295,7 @@
         async function deleteItem(c, id) { if (confirm("Excluir?")) await db.collection(c).doc(id).delete(); }
         function setFilterType(t, b) { state.eventFilterType = t; document.querySelectorAll('.seg-btn').forEach(x => x.classList.remove('active')); b.classList.add('active'); renderEvents(); }
         function compartilharEvento(titulo, igreja, data, hora, endereco) {
-            const texto = `🅐 🅟🅐🅩 🅓🅔 🅓🅔🅤🅢\n\n*CONVITE ESPECIAL*\n\n🎵 *${titulo.toUpperCase()}*\n🏛 Comum: ${igreja}\n📅 Data: ${data}\n⏰ Hora: ${hora}\n📍 Local: ${endereco}\n\n*Músicos, Organistas, Encarregados, Aprendiz e Toda irmandade estão convidados para juntos louvarmos ao nosso Deus!!*\n🎼Venha se alegrar conosco na presença de Deus!!`;
+            const texto = `🅐 🅟🅐🅩 🅓🅔 🅓🅔🅤🅢\n\n*CONVITE ESPECIAL*\n\n🎵 *${titulo.toUpperCase()}*\n🏛 Comum: ${igreja}\n📅 Data: ${data}\n⏰ Hora: ${hora}\n📍 Local: ${endereco}\n\n*Tudo quanto tem fôlego louve ao Senhor. Louvai ao Senhor!" Salmos 150:6*';
             if (navigator.share) navigator.share({ title: titulo, text: texto });
             else { navigator.clipboard.writeText(texto); alert("Copiado!"); }
         }
@@ -1319,3 +1338,4 @@
 </body>
 
 </html>
+
