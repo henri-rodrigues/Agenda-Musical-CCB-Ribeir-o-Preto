@@ -923,7 +923,6 @@
         }
        function converterParaDataReal(textoData, horario) {
     const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
     const [hora, minuto] = (horario || "00:00").split(':').map(Number);
 
     // 1. Caso seja Data Fixa (ex: 22/03/2026)
@@ -932,7 +931,7 @@
         return new Date(a, m - 1, d, hora, minuto);
     }
 
-    // 2. Caso seja Recorrente (ex: 1ª Segunda, Última Sexta)
+    // 2. Caso seja Recorrente (ex: 1ª Segunda)
     const diasSemanaMap = { domingo: 0, segunda: 1, terca: 2, terça: 2, quarta: 3, quinta: 4, sexta: 5, sabado: 6, sábado: 6 };
     const partes = textoData.trim().toLowerCase().split(/\s+/);
     if (partes.length < 2) return new Date(2099, 11, 31);
@@ -941,37 +940,23 @@
     const diaNome = partes[1];
     const diaIndex = diasSemanaMap[diaNome];
 
-    if (diaIndex === undefined) return new Date(2099, 11, 31);
-
     const buscarNoMes = (anoAlvo, mesAlvo) => {
         let ocorrencias = [];
         for (let d = 1; d <= 31; d++) {
             const dataT = new Date(anoAlvo, mesAlvo, d, hora, minuto);
             if (dataT.getMonth() !== mesAlvo) break;
-            if (dataT.getDay() === diaIndex) {
-                ocorrencias.push(new Date(dataT));
-            }
+            if (dataT.getDay() === diaIndex) ocorrencias.push(new Date(dataT));
         }
-
-        if (ordemTexto.includes("ult")) {
-            return ocorrencias[ocorrencias.length - 1]; // Pega a última ocorrência real do mês
-        } else {
-            const nOrdem = parseInt(ordemTexto.replace(/\D/g, '')) || 1;
-            return ocorrencias[nOrdem - 1] || null; 
-        }
+        if (ordemTexto.includes("ult")) return ocorrencias[ocorrencias.length - 1];
+        const nOrdem = parseInt(ordemTexto.replace(/\D/g, '')) || 1;
+        return ocorrencias[nOrdem - 1] || null;
     };
 
+    // Calculamos a data para o mês atual
     let dataFinal = buscarNoMes(hoje.getFullYear(), hoje.getMonth());
     
-    // Se a data já passou no mês atual, calcula para o mês seguinte
-    const agoraCompleto = new Date();
-    if (!dataFinal || dataFinal < agoraCompleto) {
-        let proxMes = hoje.getMonth() + 1;
-        let proxAno = hoje.getFullYear();
-        if (proxMes > 11) { proxMes = 0; proxAno++; }
-        dataFinal = buscarNoMes(proxAno, proxMes);
-    }
-
+    // Se a data já passou e estamos apenas filtrando "Todos", 
+    // ela ainda deve ser calculada para este mês para manter a ordem 1,2,3,4,Ult
     return dataFinal || new Date(2099, 11, 31);
 }
       function renderEvents() {
@@ -993,35 +978,29 @@
     });
 
     // --- ORDENAÇÃO CRONOLÓGICA E POR SEMANA ---
+    // --- ORDENAÇÃO CRONOLÓGICA E POR SEMANA ---
     filtered.sort((a, b) => {
-        const dataA = converterParaDataReal(a.dataEnsaio, a.horarioEnsaio);
-        const dataB = converterParaDataReal(b.dataEnsaio, b.horarioEnsaio);
-
-        // Se os eventos são de MESES diferentes, mantém a ordem do calendário
-        if (dataA.getMonth() !== dataB.getMonth() || dataA.getFullYear() !== dataB.getFullYear()) {
-            return dataA - dataB;
-        }
-
-        // Se estão no MESMO MÊS, aplicamos o peso para garantir 4ª antes de Última
         const obterPesoSemana = (texto) => {
             const t = texto.toLowerCase();
             if (t.includes("1ª") || t.includes("1º")) return 1;
             if (t.includes("2ª") || t.includes("2º")) return 2;
             if (t.includes("3ª") || t.includes("3º")) return 3;
             if (t.includes("4ª") || t.includes("4º")) return 4;
-            if (t.includes("ult")) return 5; // A última sempre será o maior peso do mês
-            return 0;
+            if (t.includes("ult")) return 5;
+            return 9; // Eventos com data fixa ficam por último se não definidos
         };
 
         const pesoA = obterPesoSemana(a.dataEnsaio);
         const pesoB = obterPesoSemana(b.dataEnsaio);
 
-        // Se ambos têm pesos definidos (são recorrentes), ordena pelo peso
-        if (pesoA > 0 && pesoB > 0 && pesoA !== pesoB) {
+        // Se os pesos forem diferentes, manda quem tem peso menor (1ª, 2ª...) para cima
+        if (pesoA !== pesoB) {
             return pesoA - pesoB;
         }
 
-        // Caso contrário, usa a data real
+        // Se o peso for igual (ex: dois ensaios na 1ª Segunda), ordena pela data real/hora
+        const dataA = converterParaDataReal(a.dataEnsaio, a.horarioEnsaio);
+        const dataB = converterParaDataReal(b.dataEnsaio, b.horarioEnsaio);
         return dataA - dataB;
     });
 
@@ -1298,6 +1277,7 @@
 </body>
 
 </html>
+
 
 
 
