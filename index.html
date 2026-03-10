@@ -1295,10 +1295,14 @@
         async function deleteItem(c, id) { if (confirm("Excluir?")) await db.collection(c).doc(id).delete(); }
         function setFilterType(t, b) { state.eventFilterType = t; document.querySelectorAll('.seg-btn').forEach(x => x.classList.remove('active')); b.classList.add('active'); renderEvents(); }
         function compartilharEvento(titulo, igreja, data, hora, endereco) {
-            const texto = `🅐 🅟🅐🅩 🅓🅔 🅓🅔🅤🅢\n\n*CONVITE ESPECIAL*\n\n🎵 *${titulo.toUpperCase()}*\n🏛 Comum: ${igreja}\n📅 Data: ${data}\n⏰ Hora: ${hora}\n📍 Local: ${endereco}\n\n*Tudo quanto tem fôlego louve ao Senhor. Louvai ao Senhor!" Salmos 150:6*';
-            if (navigator.share) navigator.share({ title: titulo, text: texto });
-            else { navigator.clipboard.writeText(texto); alert("Copiado!"); }
-        }
+            const texto = `🅐 🅟🅐🅩 🅓🅔 🅓🅔🅤🅢\n\n*CONVITE ESPECIAL*\n\n🎵 *${titulo.toUpperCase()}*\n🏛 Comum: ${igreja}\n📅 Data: ${data}\n⏰ Hora: ${hora}\n📍 Local: ${endereco}\n\n*Tudo quanto tem fôlego louve ao Senhor. Louvai ao Senhor! Salmos 150:6*`;
+    if (navigator.share) {
+        navigator.share({ title: titulo, text: texto });
+    } else {
+        navigator.clipboard.writeText(texto);
+        alert("Copiado!");
+    }
+}
 
         window.onload = () => {
             // Código para gerenciar atualização automática de cache (PWA)
@@ -1338,4 +1342,5 @@
 </body>
 
 </html>
+
 
