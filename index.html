@@ -945,7 +945,6 @@
 
     const buscarNoMes = (anoAlvo, mesAlvo) => {
         let ocorrencias = [];
-        // Percorre todos os dias do mês para mapear as ordens reais
         for (let d = 1; d <= 31; d++) {
             const dataT = new Date(anoAlvo, mesAlvo, d, hora, minuto);
             if (dataT.getMonth() !== mesAlvo) break;
@@ -955,16 +954,16 @@
         }
 
         if (ordemTexto.includes("ult")) {
-            return ocorrencias[ocorrencias.length - 1]; // Pega a última ocorrência real
+            return ocorrencias[ocorrencias.length - 1]; // Pega a última ocorrência real do mês
         } else {
             const nOrdem = parseInt(ordemTexto.replace(/\D/g, '')) || 1;
-            return ocorrencias[nOrdem - 1] || null; // Pega a 1ª, 2ª, 3ª ou 4ª
+            return ocorrencias[nOrdem - 1] || null; 
         }
     };
 
     let dataFinal = buscarNoMes(hoje.getFullYear(), hoje.getMonth());
     
-    // Se a data calculada já passou (ou é hoje mas o horário já foi), pula para o mês seguinte
+    // Se a data já passou no mês atual, calcula para o mês seguinte
     const agoraCompleto = new Date();
     if (!dataFinal || dataFinal < agoraCompleto) {
         let proxMes = hoje.getMonth() + 1;
@@ -1274,6 +1273,7 @@
 </body>
 
 </html>
+
 
 
 
