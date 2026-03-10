@@ -904,58 +904,108 @@
             db.collection("ministries").onSnapshot(s => { state.ministries = s.docs.map(d => ({ id: d.id, ...d.data() })); refreshFilters(); renderMinistries(); });
             db.collection("users").onSnapshot(s => { state.users = s.docs.map(d => ({ id: d.id, ...d.data() })); if (state.view === 'admin') renderAdmin(); });
         }
+        function converterParaDataReal(textoData, horario) {
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const [hora, minuto] = (horario || "00:00").split(':').map(Number);
 
-        function renderEvents() {
-            const city = document.getElementById('filterCidadeEvent').value;
-            const search = document.getElementById('searchEvents').value.toLowerCase();
-            const dia = document.getElementById('filterDiaEvent').value;
-            const grid = document.getElementById('eventGrid');
-            const emptyMsg = document.getElementById('eventEmptyMsg');
+    if (textoData && textoData.includes('/')) {
+        const [d, m, a] = textoData.split('/').map(Number);
+        return new Date(a, m - 1, d, hora, minuto);
+    }
 
-            if (!city && !dia) { grid.innerHTML = ""; emptyMsg.style.display = "block"; return; }
-            emptyMsg.style.display = "none";
+    const diasSemanaMap = { domingo: 0, segunda: 1, terca: 2, terça: 2, quarta: 3, quinta: 4, sexta: 5, sabado: 6, sábado: 6 };
+    const partes = textoData.trim().toLowerCase().split(/\s+/);
+    if (partes.length < 2) return new Date(2099, 11, 31);
 
-            const filtered = state.events.filter(e => {
-                const matchCity = city ? e.cidadeEstado === city : true;
-                const matchDia = dia ? e.dataEnsaio === dia : true;
-                const matchSearch = e.titulo.toLowerCase().includes(search) || e.nomeIgreja.toLowerCase().includes(search);
-                const matchType = state.eventFilterType === 'all' || e.tipoEvento === state.eventFilterType;
-                return matchCity && matchDia && matchSearch && matchType;
-            });
+    const ordemTexto = partes[0];
+    const diaNome = partes[1];
+    const diaIndex = diasSemanaMap[diaNome];
 
-            grid.innerHTML = filtered.map(e => `
-                <div class="card-event ${e.tipoEvento === 'especial' ? 'especial' : ''}">
-                    <div>
-                        <span style="font-size:0.6rem; font-weight:800; color:var(--p-accent); text-transform:uppercase;">${e.tipoEvento === 'especial' ? 'Evento' : 'Ensaio Local'}</span>
-                        <h3>${e.titulo}</h3>
-                        
-                        <p>🏛 ${e.nomeIgreja}</p>
-                        
-                        <p style="font-size: 0.85rem; color: var(--p-text-light); font-weight: 500;">📍 ${e.cidadeEstado}</p>
-                        
-                        <div style="font-size:0.8rem; margin:5px 0;">🗺️ ${e.endereco}</div>
-                        
-                        <div style="font-size:0.8rem; font-weight:600;">🕒 ${e.dataEnsaio} - ${e.horarioEnsaio}</div>
-                        
-                        ${(e.encRegional || e.encLocal || e.examinadora) ? `
-                            <div class="enc-container">
-                                ${e.encRegional ? `<div><b>Enc. Regional:</b> ${e.encRegional}</div>` : ''}
-                                ${e.encLocal ? `<div><b>Enc. Local:</b> ${e.encLocal}</div>` : ''}
-                                ${e.examinadora ? `<div><b>Examinadora:</b> ${e.examinadora}</div>` : ''}
-                            </div>
-                        ` : ''}
+    if (diaIndex === undefined) return new Date(2099, 11, 31);
 
-                        ${e.obs ? `<div class="obs-container">Obs: ${e.obs}</div>` : ''}
-                    </div>
-                    <div class="card-actions">
-                        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.endereco + ', ' + e.cidadeEstado)}" target="_blank" class="btn-card bg-maps">Maps</a>
-                        <a href="https://waze.com/ul?q=${encodeURIComponent(e.endereco + ', ' + e.cidadeEstado)}" target="_blank" class="btn-card bg-waze">Waze</a>
-                        <a href="${gerarLinkCalendario(e)}" target="_blank" class="btn-card bg-calendar">Agenda</a>
-                        <button onclick="compartilharEvento('${e.titulo}', '${e.nomeIgreja}', '${e.dataEnsaio}', '${e.horarioEnsaio}', '${e.endereco}')" class="btn-card bg-share">Compartilhar</button>
-                    </div>
-                    ${state.currentUser ? `<button class="btn-ui btn-primary" style="margin-top:10px; width:100%; font-size:0.7rem" onclick="openModal('event', '${e.id}')">Editar</button>` : ''}
-                </div>`).join('');
+    const buscarNoMes = (anoAlvo, mesAlvo) => {
+        let ocorrencias = 0;
+        let ultimaData = null;
+        const nOrdem = parseInt(ordemTexto.replace(/\D/g, '')) || 0;
+        const eUltima = ordemTexto.includes("ult");
+
+        for (let d = 1; d <= 31; d++) {
+            const dataT = new Date(anoAlvo, mesAlvo, d, hora, minuto);
+            if (dataT.getMonth() !== mesAlvo) break;
+            if (dataT.getDay() === diaIndex) {
+                ocorrencias++;
+                ultimaData = new Date(dataT);
+                if (!eUltima && ocorrencias === nOrdem) return dataT;
+            }
         }
+        return eUltima ? ultimaData : null;
+    };
+
+    let dataFinal = buscarNoMes(hoje.getFullYear(), hoje.getMonth());
+    if (!dataFinal || dataFinal < hoje) {
+        let proxMes = hoje.getMonth() + 1;
+        let proxAno = hoje.getFullYear();
+        if (proxMes > 11) { proxMes = 0; proxAno++; }
+        dataFinal = buscarNoMes(proxAno, proxMes);
+    }
+    return dataFinal || new Date(2099, 11, 31);
+}
+
+       function renderEvents() {
+    const city = document.getElementById('filterCidadeEvent').value;
+    const search = document.getElementById('searchEvents').value.toLowerCase();
+    const dia = document.getElementById('filterDiaEvent').value;
+    const grid = document.getElementById('eventGrid');
+    const emptyMsg = document.getElementById('eventEmptyMsg');
+
+    if (!city && !dia) { grid.innerHTML = ""; emptyMsg.style.display = "block"; return; }
+    emptyMsg.style.display = "none";
+
+    let filtered = state.events.filter(e => {
+        const matchCity = city ? e.cidadeEstado === city : true;
+        const matchDia = dia ? e.dataEnsaio === dia : true;
+        const matchSearch = e.titulo.toLowerCase().includes(search) || e.nomeIgreja.toLowerCase().includes(search);
+        const matchType = state.eventFilterType === 'all' || e.tipoEvento === state.eventFilterType;
+        return matchCity && matchDia && matchSearch && matchType;
+    });
+
+    // AQUI ESTÁ A ORDENAÇÃO:
+    filtered.sort((a, b) => {
+        const dataA = converterParaDataReal(a.dataEnsaio, a.horarioEnsaio);
+        const dataB = converterParaDataReal(b.dataEnsaio, b.horarioEnsaio);
+        return dataA - dataB;
+    });
+
+    grid.innerHTML = filtered.map(e => `
+        <div class="card-event ${e.tipoEvento === 'especial' ? 'especial' : ''}">
+            <div>
+                <span style="font-size:0.6rem; font-weight:800; color:var(--p-accent); text-transform:uppercase;">${e.tipoEvento === 'especial' ? 'Evento' : 'Ensaio Local'}</span>
+                <h3>${e.titulo}</h3>
+                <p>🏛 ${e.nomeIgreja}</p>
+                <p style="font-size: 0.85rem; color: var(--p-text-light); font-weight: 500;">📍 ${e.cidadeEstado}</p>
+                <div style="font-size:0.8rem; margin:5px 0;">🗺️ ${e.endereco}</div>
+                <div style="font-size:0.8rem; font-weight:600;">🕒 ${e.dataEnsaio} - ${e.horarioEnsaio}</div>
+                
+                ${(e.encRegional || e.encLocal || e.examinadora) ? `
+                    <div class="enc-container">
+                        ${e.encRegional ? `<div><b>Reg:</b> ${e.encRegional}</div>` : ''}
+                        ${e.encLocal ? `<div><b>Loc:</b> ${e.encLocal}</div>` : ''}
+                        ${e.examinadora ? `<div><b>Exa:</b> ${e.examinadora}</div>` : ''}
+                    </div>
+                ` : ''}
+
+                ${e.obs ? `<div class="obs-container">Obs: ${e.obs}</div>` : ''}
+            </div>
+            <div class="card-actions">
+                <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.endereco + ', ' + e.cidadeEstado)}" target="_blank" class="btn-card bg-maps">Maps</a>
+                <a href="https://waze.com/ul?q=${encodeURIComponent(e.endereco + ', ' + e.cidadeEstado)}" target="_blank" class="btn-card bg-waze">Waze</a>
+                <a href="${gerarLinkCalendario(e)}" target="_blank" class="btn-card bg-calendar">Agenda</a>
+                <button onclick="compartilharEvento('${e.titulo}', '${e.nomeIgreja}', '${e.dataEnsaio}', '${e.horarioEnsaio}', '${e.endereco}')" class="btn-card bg-share">Enviar</button>
+            </div>
+            ${state.currentUser ? `<button class="btn-ui btn-primary" style="margin-top:10px; width:100%; font-size:0.7rem" onclick="openModal('event', '${e.id}')">Editar</button>` : ''}
+        </div>`).join('');
+}
 
        function renderMinistries() {
     const city = document.getElementById('filterCidadeMin').value;
@@ -1178,6 +1228,7 @@
 </body>
 
 </html>
+
 
 
 
