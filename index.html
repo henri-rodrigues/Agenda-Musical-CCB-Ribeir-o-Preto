@@ -995,40 +995,41 @@
     // --- ORDENAÇÃO CRONOLÓGICA E POR SEMANA ---
     // --- ORDENAÇÃO CRONOLÓGICA INTELIGENTE ---
     // --- ORDENAÇÃO FORÇADA: SEMANA DO MÊS + DATA ---
-    filtered.sort((a, b) => {
-        const dataA = converterParaDataReal(a.dataEnsaio, a.horarioEnsaio);
-        const dataB = converterParaDataReal(b.dataEnsaio, b.horarioEnsaio);
+    // --- ORDENAÇÃO DEFINITIVA: MÊS > PESO (1ª a 5ª) > DATA ---
+filtered.sort((a, b) => {
+    const dataA = converterParaDataReal(a.dataEnsaio, a.horarioEnsaio);
+    const dataB = converterParaDataReal(b.dataEnsaio, b.horarioEnsaio);
 
-        // 1. Se os eventos forem de meses diferentes, manda o mês mais próximo para cima
-        const mesAnoA = dataA.getFullYear() * 12 + dataA.getMonth();
-        const mesAnoB = dataB.getFullYear() * 12 + dataB.getMonth();
-        
-        if (mesAnoA !== mesAnoB) {
-            return mesAnoA - mesAnoB;
-        }
+    // 1. REGRA DE OURO: O Mês manda em tudo.
+    // Março (Mês 2 no JS) vem sempre antes de Abril (Mês 3).
+    const mesScoreA = dataA.getFullYear() * 12 + dataA.getMonth();
+    const mesScoreB = dataB.getFullYear() * 12 + dataB.getMonth();
+    
+    if (mesScoreA !== mesScoreB) {
+        return mesScoreA - mesScoreB;
+    }
 
-        // 2. Se estão no MESMO MÊS, forçamos a ordem das semanas (1ª < 2ª < 3ª < 4ª < Última)
-        const obterPesoSemana = (texto) => {
-    const t = texto.toLowerCase();
-    if (t.includes("1ª") || t.includes("1º")) return 1;
-    if (t.includes("2ª") || t.includes("2º")) return 2;
-    if (t.includes("3ª") || t.includes("3º")) return 3;
-    if (t.includes("4ª") || t.includes("4º")) return 4;
-    if (t.includes("ult")) return 5; // Peso 5 garante que vem por último no mês
-    return 6; // Eventos especiais/fixos ficam após as recorrências do mês
-};
+    // 2. REGRA DE DESEMPATE (Mesmo Mês): Peso da categoria.
+    const obterPesoSemana = (texto) => {
+        const t = (texto || "").toLowerCase();
+        if (t.includes("1ª") || t.includes("1º")) return 1;
+        if (t.includes("2ª") || t.includes("2º")) return 2;
+        if (t.includes("3ª") || t.includes("3º")) return 3;
+        if (t.includes("4ª") || t.includes("4º")) return 4;
+        if (t.includes("ult")) return 5; // A última sempre será a maior do mês (seja 4ª ou 5ª)
+        return 6; // Eventos com data fixa (especiais) ficam no fim do bloco do mês
+    };
 
-        const pesoA = obterPesoSemana(a.dataEnsaio);
-        const pesoB = obterPesoSemana(b.dataEnsaio);
+    const pesoA = obterPesoSemana(a.dataEnsaio);
+    const pesoB = obterPesoSemana(b.dataEnsaio);
 
-        // Se ambos forem ensaios recorrentes e tiverem pesos diferentes
-        if (pesoA !== pesoB && pesoA > 0 && pesoB > 0) {
-            return pesoA - pesoB;
-        }
+    if (pesoA !== pesoB) {
+        return pesoA - pesoB;
+    }
 
-        // 3. Se o peso for igual (ou se um deles for data fixa), ordena pela data/hora real
-        return dataA - dataB;
-    });
+    // 3. Se empatar no mês e no peso, usa a data exata.
+    return dataA - dataB;
+});
     grid.innerHTML = filtered.map(e => `
         <div class="card-event ${e.tipoEvento === 'especial' ? 'especial' : ''}">
             <div>
@@ -1302,6 +1303,7 @@
 </body>
 
 </html>
+
 
 
 
