@@ -974,7 +974,7 @@
 
     return dataFinal || new Date(2099, 11, 31);
 }
-       function renderEvents() {
+      function renderEvents() {
     const city = document.getElementById('filterCidadeEvent').value;
     const search = document.getElementById('searchEvents').value.toLowerCase();
     const dia = document.getElementById('filterDiaEvent').value;
@@ -992,37 +992,38 @@
         return matchCity && matchDia && matchSearch && matchType;
     });
 
-    // AQUI ESTÁ A ORDENAÇÃO:
-    // --- ORDENAÇÃO CRONOLÓGICA INTELIGENTE ---
-filtered.sort((a, b) => {
-    const dataA = converterParaDataReal(a.dataEnsaio, a.horarioEnsaio);
-    const dataB = converterParaDataReal(b.dataEnsaio, b.horarioEnsaio);
+    // --- ORDENAÇÃO CRONOLÓGICA E POR SEMANA ---
+    filtered.sort((a, b) => {
+        const dataA = converterParaDataReal(a.dataEnsaio, a.horarioEnsaio);
+        const dataB = converterParaDataReal(b.dataEnsaio, b.horarioEnsaio);
 
-    // Se os meses forem diferentes, ordena pelo tempo (quem vem primeiro no calendário)
-    if (dataA.getMonth() !== dataB.getMonth() || dataA.getFullYear() !== dataB.getFullYear()) {
+        // Se os eventos são de MESES diferentes, mantém a ordem do calendário
+        if (dataA.getMonth() !== dataB.getMonth() || dataA.getFullYear() !== dataB.getFullYear()) {
+            return dataA - dataB;
+        }
+
+        // Se estão no MESMO MÊS, aplicamos o peso para garantir 4ª antes de Última
+        const obterPesoSemana = (texto) => {
+            const t = texto.toLowerCase();
+            if (t.includes("1ª") || t.includes("1º")) return 1;
+            if (t.includes("2ª") || t.includes("2º")) return 2;
+            if (t.includes("3ª") || t.includes("3º")) return 3;
+            if (t.includes("4ª") || t.includes("4º")) return 4;
+            if (t.includes("ult")) return 5; // A última sempre será o maior peso do mês
+            return 0;
+        };
+
+        const pesoA = obterPesoSemana(a.dataEnsaio);
+        const pesoB = obterPesoSemana(b.dataEnsaio);
+
+        // Se ambos têm pesos definidos (são recorrentes), ordena pelo peso
+        if (pesoA > 0 && pesoB > 0 && pesoA !== pesoB) {
+            return pesoA - pesoB;
+        }
+
+        // Caso contrário, usa a data real
         return dataA - dataB;
-    }
-
-    // Se estiverem no MESMO MÊS, vamos garantir que "Última" venha depois da "4ª"
-    const obterPesoSexta = (texto) => {
-        const t = texto.toLowerCase();
-        if (t.includes("1ª") || t.includes("1º")) return 1;
-        if (t.includes("2ª") || t.includes("2º")) return 2;
-        if (t.includes("3ª") || t.includes("3º")) return 3;
-        if (t.includes("4ª") || t.includes("4º")) return 4;
-        if (t.includes("ult")) return 5; // Peso maior para garantir que vem por último
-        return 0;
-    };
-
-    const pesoA = obterPesoSexta(a.dataEnsaio);
-    const pesoB = obterPesoSexta(b.dataEnsaio);
-
-    if (pesoA !== pesoB && pesoA > 0 && pesoB > 0) {
-        return pesoA - pesoB;
-    }
-
-    return dataA - dataB;
-});
+    });
 
     grid.innerHTML = filtered.map(e => `
         <div class="card-event ${e.tipoEvento === 'especial' ? 'especial' : ''}">
@@ -1053,7 +1054,6 @@ filtered.sort((a, b) => {
             ${state.currentUser ? `<button class="btn-ui btn-primary" style="margin-top:10px; width:100%; font-size:0.7rem" onclick="openModal('event', '${e.id}')">Editar</button>` : ''}
         </div>`).join('');
 }
-
        function renderMinistries() {
     const city = document.getElementById('filterCidadeMin').value;
     const search = document.getElementById('searchMin').value.toLowerCase();
@@ -1298,6 +1298,7 @@ filtered.sort((a, b) => {
 </body>
 
 </html>
+
 
 
 
