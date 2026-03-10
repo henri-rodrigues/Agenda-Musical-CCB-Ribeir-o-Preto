@@ -923,41 +923,48 @@
         }
        function converterParaDataReal(textoData, horario) {
     const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
     const [hora, minuto] = (horario || "00:00").split(':').map(Number);
 
-    // 1. Caso seja Data Fixa (ex: 22/03/2026)
+    // 1. Data Fixa (DD/MM/YYYY)
     if (textoData && textoData.includes('/')) {
         const [d, m, a] = textoData.split('/').map(Number);
         return new Date(a, m - 1, d, hora, minuto);
     }
 
-    // 2. Caso seja Recorrente (ex: 1ª Segunda)
+    // 2. Recorrente (1ª Segunda, etc)
     const diasSemanaMap = { domingo: 0, segunda: 1, terca: 2, terça: 2, quarta: 3, quinta: 4, sexta: 5, sabado: 6, sábado: 6 };
     const partes = textoData.trim().toLowerCase().split(/\s+/);
     if (partes.length < 2) return new Date(2099, 11, 31);
 
     const ordemTexto = partes[0];
-    const diaNome = partes[1];
-    const diaIndex = diasSemanaMap[diaNome];
+    const diaIndex = diasSemanaMap[partes[1]];
 
-    const buscarNoMes = (anoAlvo, mesAlvo) => {
+    const buscarNoMes = (ano, mes) => {
         let ocorrencias = [];
         for (let d = 1; d <= 31; d++) {
-            const dataT = new Date(anoAlvo, mesAlvo, d, hora, minuto);
-            if (dataT.getMonth() !== mesAlvo) break;
+            const dataT = new Date(ano, mes, d, hora, minuto);
+            if (dataT.getMonth() !== mes) break;
             if (dataT.getDay() === diaIndex) ocorrencias.push(new Date(dataT));
         }
         if (ordemTexto.includes("ult")) return ocorrencias[ocorrencias.length - 1];
-        const nOrdem = parseInt(ordemTexto.replace(/\D/g, '')) || 1;
-        return ocorrencias[nOrdem - 1] || null;
+        const n = parseInt(ordemTexto.replace(/\D/g, '')) || 1;
+        return ocorrencias[n - 1] || null;
     };
 
-    // Calculamos a data para o mês atual
-    let dataFinal = buscarNoMes(hoje.getFullYear(), hoje.getMonth());
+    // Tenta no mês atual
+    let dataResult = buscarNoMes(hoje.getFullYear(), hoje.getMonth());
     
-    // Se a data já passou e estamos apenas filtrando "Todos", 
-    // ela ainda deve ser calculada para este mês para manter a ordem 1,2,3,4,Ult
-    return dataFinal || new Date(2099, 11, 31);
+    // Se a data já passou hoje, busca no mês seguinte
+    const agoraCompleto = new Date();
+    if (!dataResult || dataResult < agoraCompleto) {
+        let proxMes = hoje.getMonth() + 1;
+        let proxAno = hoje.getFullYear();
+        if (proxMes > 11) { proxMes = 0; proxAno++; }
+        dataResult = buscarNoMes(proxAno, proxMes);
+    }
+
+    return dataResult || new Date(2099, 11, 31);
 }
       function renderEvents() {
     const city = document.getElementById('filterCidadeEvent').value;
@@ -979,31 +986,29 @@
 
     // --- ORDENAÇÃO CRONOLÓGICA E POR SEMANA ---
     // --- ORDENAÇÃO CRONOLÓGICA E POR SEMANA ---
+    // --- ORDENAÇÃO CRONOLÓGICA INTELIGENTE ---
     filtered.sort((a, b) => {
-        const obterPesoSemana = (texto) => {
-            const t = texto.toLowerCase();
+        const dataA = converterParaDataReal(a.dataEnsaio, a.horarioEnsaio);
+        const dataB = converterParaDataReal(b.dataEnsaio, b.horarioEnsaio);
+
+        // 1ª Prioridade: Data e Hora (Mais perto primeiro)
+        if (dataA.getTime() !== dataB.getTime()) {
+            return dataA - dataB;
+        }
+
+        // 2ª Prioridade (Desempate): Peso da Semana (4ª antes de Última)
+        const obterPeso = (txt) => {
+            const t = txt.toLowerCase();
             if (t.includes("1ª") || t.includes("1º")) return 1;
             if (t.includes("2ª") || t.includes("2º")) return 2;
             if (t.includes("3ª") || t.includes("3º")) return 3;
             if (t.includes("4ª") || t.includes("4º")) return 4;
             if (t.includes("ult")) return 5;
-            return 9; // Eventos com data fixa ficam por último se não definidos
+            return 0;
         };
 
-        const pesoA = obterPesoSemana(a.dataEnsaio);
-        const pesoB = obterPesoSemana(b.dataEnsaio);
-
-        // Se os pesos forem diferentes, manda quem tem peso menor (1ª, 2ª...) para cima
-        if (pesoA !== pesoB) {
-            return pesoA - pesoB;
-        }
-
-        // Se o peso for igual (ex: dois ensaios na 1ª Segunda), ordena pela data real/hora
-        const dataA = converterParaDataReal(a.dataEnsaio, a.horarioEnsaio);
-        const dataB = converterParaDataReal(b.dataEnsaio, b.horarioEnsaio);
-        return dataA - dataB;
+        return obterPeso(a.dataEnsaio) - obterPeso(b.dataEnsaio);
     });
-
     grid.innerHTML = filtered.map(e => `
         <div class="card-event ${e.tipoEvento === 'especial' ? 'especial' : ''}">
             <div>
@@ -1277,6 +1282,7 @@
 </body>
 
 </html>
+
 
 
 
