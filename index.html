@@ -265,15 +265,24 @@
         }
 
         /* Estilo específico para os botões de filtro de ministério */
-.seg-btn-min { 
-    flex: 1; border: none; padding: 8px; border-radius: 8px; 
-    cursor: pointer; font-size: 0.75rem; font-weight: 600; 
-    color: var(--p-text-light); transition: 0.2s; background: transparent;
-}
-.seg-btn-min.active { 
-    background: var(--p-white); color: var(--p-dark); 
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); 
-}
+        .seg-btn-min {
+            flex: 1;
+            border: none;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--p-text-light);
+            transition: 0.2s;
+            background: transparent;
+        }
+
+        .seg-btn-min.active {
+            background: var(--p-white);
+            color: var(--p-dark);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
 
         @keyframes fadeUp {
             from {
@@ -363,15 +372,17 @@
             gap: 5px;
             transition: all .2s ease;
         }
-        .min-photo { 
-    width: 80px; 
-    height: 80px; 
-    border-radius: 50%; 
-    border: 3px solid var(--p-accent); 
-    margin-bottom: 1rem; 
-    object-fit: cover; 
-    background-color: #f1f5f9; /* Cor de fundo caso a imagem falhe */
-}
+
+        .min-photo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid var(--p-accent);
+            margin-bottom: 1rem;
+            object-fit: cover;
+            background-color: #f1f5f9;
+            /* Cor de fundo caso a imagem falhe */
+        }
 
         .btn-hoje {
             width: 100%;
@@ -478,23 +489,25 @@
             display: block;
             animation: fadeIn 0.3s ease;
         }
-        .ministry-divider {
-    grid-column: 1 / -1; /* Ocupa a largura toda da grade */
-    padding: 15px 0;
-    margin: 10px 0;
-    border-bottom: 2px solid var(--p-accent);
-    color: var(--p-dark);
-    font-family: 'Poppins';
-    font-size: 1.1rem;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
 
-.ministry-divider svg {
-    color: var(--p-accent);
-}
+        .ministry-divider {
+            grid-column: 1 / -1;
+            /* Ocupa a largura toda da grade */
+            padding: 15px 0;
+            margin: 10px 0;
+            border-bottom: 2px solid var(--p-accent);
+            color: var(--p-dark);
+            font-family: 'Poppins';
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ministry-divider svg {
+            color: var(--p-accent);
+        }
 
         @keyframes fadeIn {
             from {
@@ -582,22 +595,25 @@
                 Selecione uma cidade ou um dia para ver os eventos.</div>
         </section>
 
-       <section id="view-ministries" class="view-section">
-    <div id="adminMinBtn" class="hidden" style="display: flex; justify-content: center; margin-bottom: 1.5rem;">
-        <button class="btn-ui btn-primary" onclick="openModal('ministry')">+ Novo Ministério</button>
-    </div>
-    <div class="filter-box">
-        <input type="text" id="searchMin" class="search-input" placeholder="🔍 Pesquisar por nome...">
-        <select id="filterCidadeMin" class="select-ui"><option value="">📍 Filtrar por Cidade (Todas)</option></select>
-        
-        <div class="segmented-control" style="margin-top: 10px;">
-            <button class="seg-btn-min active" onclick="setMinFilterRole('all', this)">Todos</button>
-            <button class="seg-btn-min" onclick="setMinFilterRole('Encarregado Regional', this)">Regional</button>
-            <button class="seg-btn-min" onclick="setMinFilterRole('Examinadora', this)">Examinadora</button>
-        </div>
-    </div>
-    <div id="minGrid" class="card-grid"></div>
-</section>
+        <section id="view-ministries" class="view-section">
+            <div id="adminMinBtn" class="hidden" style="display: flex; justify-content: center; margin-bottom: 1.5rem;">
+                <button class="btn-ui btn-primary" onclick="openModal('ministry')">+ Novo Ministério</button>
+            </div>
+            <div class="filter-box">
+                <input type="text" id="searchMin" class="search-input" placeholder="🔍 Pesquisar por nome...">
+                <select id="filterCidadeMin" class="select-ui">
+                    <option value="">📍 Filtrar por Cidade (Todas)</option>
+                </select>
+
+                <div class="segmented-control" style="margin-top: 10px;">
+                    <button class="seg-btn-min active" onclick="setMinFilterRole('all', this)">Todos</button>
+                    <button class="seg-btn-min"
+                        onclick="setMinFilterRole('Encarregado Regional', this)">Regional</button>
+                    <button class="seg-btn-min" onclick="setMinFilterRole('Examinadora', this)">Examinadora</button>
+                </div>
+            </div>
+            <div id="minGrid" class="card-grid"></div>
+        </section>
 
         <section id="view-login" class="view-section">
             <div
@@ -707,26 +723,26 @@
         db.enablePersistence().catch(err => console.error("Erro offline:", err.code));
 
         let state = {
-    view: 'events',
-    currentUser: JSON.parse(localStorage.getItem('ccb_user_session')) || null,
-    eventFilterType: 'all',
-    minFilterRole: 'all', // Certifique-se de que esta vírgula existe
-    events: [], 
-    ministries: [], 
-    users: [], 
-    editingId: null, 
-    activeModalType: 'event'
-};
+            view: 'events',
+            currentUser: JSON.parse(localStorage.getItem('ccb_user_session')) || null,
+            eventFilterType: 'all',
+            minFilterRole: 'all', // Certifique-se de que esta vírgula existe
+            events: [],
+            ministries: [],
+            users: [],
+            editingId: null,
+            activeModalType: 'event'
+        };
 
         const DIAS_LIST = ["1ª Segunda", "1ª Terça", "1ª Quarta", "1ª Quinta", "1ª Sexta", "1º Sábado", "1º Domingo", "2ª Segunda", "2ª Terça", "2ª Quarta", "2ª Quinta", "2ª Sexta", "2º Sábado", "2º Domingo", "3ª Segunda", "3ª Terça", "3ª Quarta", "3ª Quinta", "3ª Sexta", "3º Sábado", "3º Domingo", "4ª Segunda", "4ª Terça", "4ª Quarta", "4ª Quinta", "4ª Sexta", "4º Sábado", "4º Domingo", "Última Segunda", "Última Terça", "Última Quarta", "Última Quinta", "Última Sexta", "Último Sábado", "Último Domingo"];
 
         function setMinFilterRole(role, btn) {
-    state.minFilterRole = role;
-    // Remove o 'active' apenas dos botões de ministério
-    document.querySelectorAll('.seg-btn-min').forEach(x => x.classList.remove('active'));
-    btn.classList.add('active');
-    renderMinistries();
-}
+            state.minFilterRole = role;
+            // Remove o 'active' apenas dos botões de ministério
+            document.querySelectorAll('.seg-btn-min').forEach(x => x.classList.remove('active'));
+            btn.classList.add('active');
+            renderMinistries();
+        }
         // No Script (Lógica):
         let gatilhoInstalacao;
         window.addEventListener('beforeinstallprompt', (e) => {
@@ -921,116 +937,116 @@
             db.collection("ministries").onSnapshot(s => { state.ministries = s.docs.map(d => ({ id: d.id, ...d.data() })); refreshFilters(); renderMinistries(); });
             db.collection("users").onSnapshot(s => { state.users = s.docs.map(d => ({ id: d.id, ...d.data() })); if (state.view === 'admin') renderAdmin(); });
         }
-       function converterParaDataReal(textoData, horario) {
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-    const [hora, minuto] = (horario || "00:00").split(':').map(Number);
+        function converterParaDataReal(textoData, horario) {
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            const [hora, minuto] = (horario || "00:00").split(':').map(Number);
 
-    // 1. Data Fixa (DD/MM/YYYY)
-    if (textoData && textoData.includes('/')) {
-        const [d, m, a] = textoData.split('/').map(Number);
-        return new Date(a, m - 1, d, hora, minuto);
-    }
+            // 1. Data Fixa (DD/MM/YYYY)
+            if (textoData && textoData.includes('/')) {
+                const [d, m, a] = textoData.split('/').map(Number);
+                return new Date(a, m - 1, d, hora, minuto);
+            }
 
-    // 2. Recorrente (1ª Segunda, etc)
-    const diasSemanaMap = { domingo: 0, segunda: 1, terca: 2, terça: 2, quarta: 3, quinta: 4, sexta: 5, sabado: 6, sábado: 6 };
-    const partes = textoData.trim().toLowerCase().split(/\s+/);
-    if (partes.length < 2) return new Date(2099, 11, 31);
+            // 2. Recorrente (1ª Segunda, etc)
+            const diasSemanaMap = { domingo: 0, segunda: 1, terca: 2, terça: 2, quarta: 3, quinta: 4, sexta: 5, sabado: 6, sábado: 6 };
+            const partes = textoData.trim().toLowerCase().split(/\s+/);
+            if (partes.length < 2) return new Date(2099, 11, 31);
 
-    const ordemTexto = partes[0];
-    const diaIndex = diasSemanaMap[partes[1]];
+            const ordemTexto = partes[0];
+            const diaIndex = diasSemanaMap[partes[1]];
 
-    const buscarNoMes = (ano, mes) => {
-        let ocorrencias = [];
-        for (let d = 1; d <= 31; d++) {
-            const dataT = new Date(ano, mes, d, hora, minuto);
-            if (dataT.getMonth() !== mes) break;
-            if (dataT.getDay() === diaIndex) ocorrencias.push(new Date(dataT));
+            const buscarNoMes = (ano, mes) => {
+                let ocorrencias = [];
+                for (let d = 1; d <= 31; d++) {
+                    const dataT = new Date(ano, mes, d, hora, minuto);
+                    if (dataT.getMonth() !== mes) break;
+                    if (dataT.getDay() === diaIndex) ocorrencias.push(new Date(dataT));
+                }
+                if (ordemTexto.includes("ult")) return ocorrencias[ocorrencias.length - 1];
+                const n = parseInt(ordemTexto.replace(/\D/g, '')) || 1;
+                return ocorrencias[n - 1] || null;
+            };
+
+            // Tenta no mês atual
+            let dataFinal = buscarNoMes(hoje.getFullYear(), hoje.getMonth());
+
+            // Só pula para o mês seguinte se a data deste mês já passou TOTALMENTE (dia e hora)
+            const agoraCompleto = new Date();
+            if (!dataFinal || dataFinal < agoraCompleto) {
+                let proxMes = hoje.getMonth() + 1;
+                let proxAno = hoje.getFullYear();
+                if (proxMes > 11) { proxMes = 0; proxAno++; }
+                dataFinal = buscarNoMes(proxAno, proxMes);
+            }
+
+            return dataFinal || new Date(2099, 11, 31);
         }
-        if (ordemTexto.includes("ult")) return ocorrencias[ocorrencias.length - 1];
-        const n = parseInt(ordemTexto.replace(/\D/g, '')) || 1;
-        return ocorrencias[n - 1] || null;
-    };
-
-    // Tenta no mês atual
-    let dataFinal = buscarNoMes(hoje.getFullYear(), hoje.getMonth());
-    
-    // Só pula para o mês seguinte se a data deste mês já passou TOTALMENTE (dia e hora)
-    const agoraCompleto = new Date();
-    if (!dataFinal || dataFinal < agoraCompleto) {
-        let proxMes = hoje.getMonth() + 1;
-        let proxAno = hoje.getFullYear();
-        if (proxMes > 11) { proxMes = 0; proxAno++; }
-        dataFinal = buscarNoMes(proxAno, proxMes);
-    }
-
-    return dataFinal || new Date(2099, 11, 31);
-}
 
 
 
 
 
 
-        
-      function renderEvents() {
-    const city = document.getElementById('filterCidadeEvent').value;
-    const search = document.getElementById('searchEvents').value.toLowerCase();
-    const dia = document.getElementById('filterDiaEvent').value;
-    const grid = document.getElementById('eventGrid');
-    const emptyMsg = document.getElementById('eventEmptyMsg');
 
-    if (!city && !dia) { grid.innerHTML = ""; emptyMsg.style.display = "block"; return; }
-    emptyMsg.style.display = "none";
+        function renderEvents() {
+            const city = document.getElementById('filterCidadeEvent').value;
+            const search = document.getElementById('searchEvents').value.toLowerCase();
+            const dia = document.getElementById('filterDiaEvent').value;
+            const grid = document.getElementById('eventGrid');
+            const emptyMsg = document.getElementById('eventEmptyMsg');
 
-    let filtered = state.events.filter(e => {
-        const matchCity = city ? e.cidadeEstado === city : true;
-        const matchDia = dia ? e.dataEnsaio === dia : true;
-        const matchSearch = e.titulo.toLowerCase().includes(search) || e.nomeIgreja.toLowerCase().includes(search);
-        const matchType = state.eventFilterType === 'all' || e.tipoEvento === state.eventFilterType;
-        return matchCity && matchDia && matchSearch && matchType;
-    });
+            if (!city && !dia) { grid.innerHTML = ""; emptyMsg.style.display = "block"; return; }
+            emptyMsg.style.display = "none";
 
-    // --- ORDENAÇÃO CRONOLÓGICA E POR SEMANA ---
-    // --- ORDENAÇÃO CRONOLÓGICA E POR SEMANA ---
-    // --- ORDENAÇÃO CRONOLÓGICA INTELIGENTE ---
-    // --- ORDENAÇÃO FORÇADA: SEMANA DO MÊS + DATA ---
-    // --- ORDENAÇÃO DEFINITIVA: MÊS > PESO (1ª a 5ª) > DATA ---
-filtered.sort((a, b) => {
-    const dataA = converterParaDataReal(a.dataEnsaio, a.horarioEnsaio);
-    const dataB = converterParaDataReal(b.dataEnsaio, b.horarioEnsaio);
+            let filtered = state.events.filter(e => {
+                const matchCity = city ? e.cidadeEstado === city : true;
+                const matchDia = dia ? e.dataEnsaio === dia : true;
+                const matchSearch = e.titulo.toLowerCase().includes(search) || e.nomeIgreja.toLowerCase().includes(search);
+                const matchType = state.eventFilterType === 'all' || e.tipoEvento === state.eventFilterType;
+                return matchCity && matchDia && matchSearch && matchType;
+            });
 
-    // 1. REGRA DE OURO: O Mês manda em tudo.
-    // Março (Mês 2 no JS) vem sempre antes de Abril (Mês 3).
-    const mesScoreA = dataA.getFullYear() * 12 + dataA.getMonth();
-    const mesScoreB = dataB.getFullYear() * 12 + dataB.getMonth();
-    
-    if (mesScoreA !== mesScoreB) {
-        return mesScoreA - mesScoreB;
-    }
+            // --- ORDENAÇÃO CRONOLÓGICA E POR SEMANA ---
+            // --- ORDENAÇÃO CRONOLÓGICA E POR SEMANA ---
+            // --- ORDENAÇÃO CRONOLÓGICA INTELIGENTE ---
+            // --- ORDENAÇÃO FORÇADA: SEMANA DO MÊS + DATA ---
+            // --- ORDENAÇÃO DEFINITIVA: MÊS > PESO (1ª a 5ª) > DATA ---
+            filtered.sort((a, b) => {
+                const dataA = converterParaDataReal(a.dataEnsaio, a.horarioEnsaio);
+                const dataB = converterParaDataReal(b.dataEnsaio, b.horarioEnsaio);
 
-    // 2. REGRA DE DESEMPATE (Mesmo Mês): Peso da categoria.
-    const obterPesoSemana = (texto) => {
-        const t = (texto || "").toLowerCase();
-        if (t.includes("1ª") || t.includes("1º")) return 1;
-        if (t.includes("2ª") || t.includes("2º")) return 2;
-        if (t.includes("3ª") || t.includes("3º")) return 3;
-        if (t.includes("4ª") || t.includes("4º")) return 4;
-        if (t.includes("ult")) return 5; // A última sempre será a maior do mês (seja 4ª ou 5ª)
-        return 6; // Eventos com data fixa (especiais) ficam no fim do bloco do mês
-    };
+                // 1. REGRA DE OURO: O Mês manda em tudo.
+                // Março (Mês 2 no JS) vem sempre antes de Abril (Mês 3).
+                const mesScoreA = dataA.getFullYear() * 12 + dataA.getMonth();
+                const mesScoreB = dataB.getFullYear() * 12 + dataB.getMonth();
 
-    const pesoA = obterPesoSemana(a.dataEnsaio);
-    const pesoB = obterPesoSemana(b.dataEnsaio);
+                if (mesScoreA !== mesScoreB) {
+                    return mesScoreA - mesScoreB;
+                }
 
-    if (pesoA !== pesoB) {
-        return pesoA - pesoB;
-    }
+                // 2. REGRA DE DESEMPATE (Mesmo Mês): Peso da categoria.
+                const obterPesoSemana = (texto) => {
+                    const t = (texto || "").toLowerCase();
+                    if (t.includes("1ª") || t.includes("1º")) return 1;
+                    if (t.includes("2ª") || t.includes("2º")) return 2;
+                    if (t.includes("3ª") || t.includes("3º")) return 3;
+                    if (t.includes("4ª") || t.includes("4º")) return 4;
+                    if (t.includes("ult")) return 5; // A última sempre será a maior do mês (seja 4ª ou 5ª)
+                    return 6; // Eventos com data fixa (especiais) ficam no fim do bloco do mês
+                };
 
-    // 3. Se empatar no mês e no peso, usa a data exata.
-    return dataA - dataB;
-});
-    grid.innerHTML = filtered.map(e => `
+                const pesoA = obterPesoSemana(a.dataEnsaio);
+                const pesoB = obterPesoSemana(b.dataEnsaio);
+
+                if (pesoA !== pesoB) {
+                    return pesoA - pesoB;
+                }
+
+                // 3. Se empatar no mês e no peso, usa a data exata.
+                return dataA - dataB;
+            });
+            grid.innerHTML = filtered.map(e => `
         <div class="card-event ${e.tipoEvento === 'especial' ? 'especial' : ''}">
             <div>
                 <span style="font-size:0.6rem; font-weight:800; color:var(--p-accent); text-transform:uppercase;">${e.tipoEvento === 'especial' ? 'Evento' : 'Ensaio Local'}</span>
@@ -1058,34 +1074,34 @@ filtered.sort((a, b) => {
             </div>
             ${state.currentUser ? `<button class="btn-ui btn-primary" style="margin-top:10px; width:100%; font-size:0.7rem" onclick="openModal('event', '${e.id}')">Editar</button>` : ''}
         </div>`).join('');
-}
-       function renderMinistries() {
-    const city = document.getElementById('filterCidadeMin').value;
-    const search = document.getElementById('searchMin').value.toLowerCase();
-    const grid = document.getElementById('minGrid');
-    
-    // 1. Filtro Inicial
-    let filtered = state.ministries.filter(m => {
-        const matchCity = !city || m.cidade === city;
-        const nome = (m.nome || "").toLowerCase();
-        const cargo = (m.cargo || "").toLowerCase();
-        const matchSearch = nome.includes(search) || cargo.includes(search);
-        const matchRole = state.minFilterRole === 'all' || m.cargo === state.minFilterRole;
-        return matchCity && matchSearch && matchRole;
-    });
+        }
+        function renderMinistries() {
+            const city = document.getElementById('filterCidadeMin').value;
+            const search = document.getElementById('searchMin').value.toLowerCase();
+            const grid = document.getElementById('minGrid');
 
-    // 2. Ordenação Alfabética por Nome
-    filtered.sort((a, b) => (a.nome || "").localeCompare(b.nome || ""));
+            // 1. Filtro Inicial
+            let filtered = state.ministries.filter(m => {
+                const matchCity = !city || m.cidade === city;
+                const nome = (m.nome || "").toLowerCase();
+                const cargo = (m.cargo || "").toLowerCase();
+                const matchSearch = nome.includes(search) || cargo.includes(search);
+                const matchRole = state.minFilterRole === 'all' || m.cargo === state.minFilterRole;
+                return matchCity && matchSearch && matchRole;
+            });
 
-    // 3. Separação por Grupos (Regional primeiro, depois Examinadoras)
-    const regionais = filtered.filter(m => m.cargo === 'Encarregado Regional');
-    const examinadoras = filtered.filter(m => m.cargo === 'Examinadora');
-    const outros = filtered.filter(m => m.cargo !== 'Encarregado Regional' && m.cargo !== 'Examinadora');
+            // 2. Ordenação Alfabética por Nome
+            filtered.sort((a, b) => (a.nome || "").localeCompare(b.nome || ""));
 
-    let htmlOutput = "";
+            // 3. Separação por Grupos (Regional primeiro, depois Examinadoras)
+            const regionais = filtered.filter(m => m.cargo === 'Encarregado Regional');
+            const examinadoras = filtered.filter(m => m.cargo === 'Examinadora');
+            const outros = filtered.filter(m => m.cargo !== 'Encarregado Regional' && m.cargo !== 'Examinadora');
 
-    // Função auxiliar para gerar o card
-    const gerarCard = (m) => `
+            let htmlOutput = "";
+
+            // Função auxiliar para gerar o card
+            const gerarCard = (m) => `
         <div class="card-min">
             <div>
                 <img 
@@ -1108,28 +1124,28 @@ filtered.sort((a, b) => {
             ` : ''}
         </div>`;
 
-    // Montagem do HTML com Divisões
-    if (regionais.length > 0) {
-        htmlOutput += `<div class="ministry-divider">💼 Encarregados Regionais</div>`;
-        htmlOutput += regionais.map(m => gerarCard(m)).join('');
-    }
+            // Montagem do HTML com Divisões
+            if (regionais.length > 0) {
+                htmlOutput += `<div class="ministry-divider">💼 Encarregados Regionais</div>`;
+                htmlOutput += regionais.map(m => gerarCard(m)).join('');
+            }
 
-    if (examinadoras.length > 0) {
-        htmlOutput += `<div class="ministry-divider">🎼 Examinadoras</div>`;
-        htmlOutput += examinadoras.map(m => gerarCard(m)).join('');
-    }
+            if (examinadoras.length > 0) {
+                htmlOutput += `<div class="ministry-divider">🎼 Examinadoras</div>`;
+                htmlOutput += examinadoras.map(m => gerarCard(m)).join('');
+            }
 
-    if (outros.length > 0) {
-        htmlOutput += `<div class="ministry-divider">🎻 Outros Ministérios</div>`;
-        htmlOutput += outros.map(m => gerarCard(m)).join('');
-    }
+            if (outros.length > 0) {
+                htmlOutput += `<div class="ministry-divider">🎻 Outros Ministérios</div>`;
+                htmlOutput += outros.map(m => gerarCard(m)).join('');
+            }
 
-    if (htmlOutput === "") {
-        grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--p-text-light);">Nenhum resultado encontrado.</div>`;
-    } else {
-        grid.innerHTML = htmlOutput;
-    }
-}
+            if (htmlOutput === "") {
+                grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--p-text-light);">Nenhum resultado encontrado.</div>`;
+            } else {
+                grid.innerHTML = htmlOutput;
+            }
+        }
         async function processAuth() {
             const u = document.getElementById('auth_user').value.trim();
             const p = document.getElementById('auth_pass').value.trim();
@@ -1303,23 +1319,3 @@ filtered.sort((a, b) => {
 </body>
 
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
