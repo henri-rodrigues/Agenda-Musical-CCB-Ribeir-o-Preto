@@ -691,7 +691,8 @@
                     <input type="text" id="f_m_cargo" class="search-input" placeholder="Ministério">
                     <input type="text" id="f_m_igreja" class="search-input" placeholder="Igreja Comum">
                     <input type="text" id="f_m_cidade" class="search-input" placeholder="Cidade">
-                    <input type="text" id="f_m_tel" class="search-input" placeholder="WhatsApp">
+                    <textarea id="f_m_igrejas_atendidas" class="search-input" placeholder="Igrejas Atendidas (Separe por vírgula) *" rows="3"></textarea>
+    <p style="font-size: 0.7rem; color: var(--p-text-light); margin: -8px 0 10px 5px;">Ex: Vila Carvalho, Central, Simioni...</p>
                 </div>
 
                 <div style="display: flex; gap: 12px; margin-top: 1rem;">
@@ -1114,27 +1115,31 @@
     let htmlOutput = "";
 
     const gerarCard = (m) => `
-        <div class="card-min">
-            <div>
-                <img 
-                    src="${m.photo ? m.photo : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" 
-                    class="min-photo" 
-                    onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"
-                >
-                <h4 style="font-weight:700;">${m.nome}</h4>
-                <p style="color:var(--p-accent); font-weight:700; font-size:0.8rem; margin-top:5px;">${m.cargo}</p>
-                <div style="font-size:0.8rem; color:var(--p-text-light); margin: 8px 0;">🏛 ${m.igreja} | 📍 ${m.cidade}</div>
+    <div class="card-min">
+        <div>
+            <img 
+                src="${m.photo ? m.photo : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" 
+                class="min-photo" 
+                onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"
+            >
+            <h4 style="font-weight:700;">${m.nome}</h4>
+            <p style="color:var(--p-accent); font-weight:700; font-size:0.8rem; margin-top:5px;">${m.cargo}</p>
+            <div style="font-size:0.8rem; color:var(--p-text-light); margin: 8px 0;">🏛 Comum: ${m.igreja}</div>
+        </div>
+
+        <button onclick="abrirIgrejasAtendidas('${m.nome}', '${m.igrejasAtendidas || ''}')" 
+                class="btn-ui" 
+                style="width: 100%; background: var(--p-dark); color: white; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                📍 Igrejas Atendidas
+        </button>
+
+        ${state.currentUser ? `
+            <div style="margin-top:10px; display:flex; gap:5px">
+                <button class="btn-ui btn-primary" style="flex:1; font-size:0.7rem" onclick="openModal('ministry', '${m.id}')">Editar</button>
+                <button class="btn-ui" style="background:#fee2e2; color:#ef4444; flex:1; font-size:0.7rem" onclick="deleteItem('ministries', '${m.id}')">Excluir</button>
             </div>
-            <div style="font-size:0.9rem; font-weight:700; color: var(--p-dark); background:#f1f5f9; padding:8px; border-radius:8px; margin-top:10px;">
-                Telefone ${formatarWhatsApp(m.tel || "")}
-            </div>
-            ${state.currentUser ? `
-                <div style="margin-top:10px; display:flex; gap:5px">
-                    <button class="btn-ui btn-primary" style="flex:1; font-size:0.7rem" onclick="openModal('ministry', '${m.id}')">Editar</button>
-                    <button class="btn-ui" style="background:#fee2e2; color:#ef4444; flex:1; font-size:0.7rem" onclick="deleteItem('ministries', '${m.id}')">Excluir</button>
-                </div>
-            ` : ''}
-        </div>`;
+        ` : ''}
+    </div>`;
 
     if (anciaes.length > 0) {
         htmlOutput += `<div class="ministry-divider">📖 Anciães</div>`;
@@ -1224,7 +1229,7 @@
                     document.getElementById('f_m_cargo').value = item.cargo;
                     document.getElementById('f_m_igreja').value = item.igreja;
                     document.getElementById('f_m_cidade').value = item.cidade;
-                    document.getElementById('f_m_tel').value = item.tel;
+                    document.getElementById('f_m_igrejas_atendidas').value = item.igrejasAtendidas || "";
                     document.getElementById('f_m_photo').value = item.photo || "";
                     if (item.photo) { document.getElementById('img_preview').src = item.photo; document.getElementById('img_preview').style.display = 'block'; }
                 }
@@ -1268,7 +1273,7 @@
                     cargo: document.getElementById('f_m_cargo').value,
                     igreja: document.getElementById('f_m_igreja').value,
                     cidade: document.getElementById('f_m_cidade').value,
-                    tel: document.getElementById('f_m_tel').value,
+                    igrejasAtendidas: document.getElementById('f_m_igrejas_atendidas').value, // ALTERADO AQUI
                     photo: document.getElementById('f_m_photo').value
                 };
             }
@@ -1299,6 +1304,29 @@
         navigator.clipboard.writeText(texto);
         alert("Copiado!");
     }
+}
+        function abrirIgrejasAtendidas(nome, igrejas) {
+    const listaIgrejas = igrejas ? igrejas.split(',') : [];
+    
+    const modalHtml = `
+        <div id="modalIgrejas" class="modal-overlay" style="display: flex; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 3000;">
+            <div class="modal" style="text-align: center; border-top: 6px solid var(--p-accent); animation: fadeUp 0.3s ease;">
+                <h3 style="font-family: 'Poppins'; color: var(--p-dark); margin-bottom: 5px;">Igrejas Atendidas</h3>
+                <p style="color: var(--p-accent); font-weight: 600; margin-bottom: 20px; font-size: 0.9rem;">${nome}</p>
+                
+                <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 25px; max-height: 200px; overflow-y: auto; padding: 5px;">
+                    ${listaIgrejas.length > 0 ? listaIgrejas.map(i => `
+                        <span style="background: #f1f5f9; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; border: 1px solid var(--p-border); font-weight: 500;">
+                            🏛 ${i.trim()}
+                        </span>
+                    `).join('') : '<p style="font-size:0.8rem; color: #94a3b8;">Nenhuma igreja listada.</p>'}
+                </div>
+
+                <button class="btn-ui btn-primary" onclick="document.getElementById('modalIgrejas').remove()" style="width: 100%; height: 45px;">Fechar</button>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
 }
 
         window.onload = () => {
