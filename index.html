@@ -646,6 +646,24 @@
         </section>
     </main>
 
+    <div id="popupConfirm" class="modal-overlay" style="display: none; z-index: 3000; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);">
+    <div class="modal" style="max-width: 400px; text-align: center; border-top: 6px solid #ef4444; animation: fadeUp 0.3s ease;">
+        <div style="font-size: 3.5rem; margin-bottom: 1rem;">⚠️</div>
+        <h3 style="font-family: 'Poppins'; color: var(--p-dark); margin-bottom: 10px;">Conflito de Agenda!</h3>
+        
+        <p id="popupConfirmText" style="color: var(--p-text-light); line-height: 1.6; font-size: 0.9rem; margin-bottom: 25px;"></p>
+        
+        <div style="display: flex; gap: 12px;">
+            <button id="btnConfirmCancel" class="btn-ui" style="flex: 1; background: #eee; color: var(--p-text);">
+                Cancelar
+            </button>
+            <button id="btnConfirmYes" class="btn-ui" style="flex: 1; background: var(--p-dark); color: white;">
+                Sim, Salvar
+            </button>
+        </div>
+    </div>
+</div>
+
     <div id="modalOverlay" class="modal-overlay">
         <div class="modal">
             <h2 id="modalTitle">Cadastro</h2>
@@ -1244,7 +1262,39 @@
             }
         }
 
-        async function saveData() {
+        // --- FUNÇÃO PARA O POPUP CUSTOMIZADO ---
+function mostrarPopupConfirmacao(mensagem) {
+    return new Promise((resolve) => {
+        const popup = document.getElementById('popupConfirm');
+        const textElement = document.getElementById('popupConfirmText');
+        const btnYes = document.getElementById('btnConfirmYes');
+        const btnCancel = document.getElementById('btnConfirmCancel');
+
+        // Define o texto dinâmico
+        textElement.innerHTML = mensagem;
+        
+        // Mostra o popup
+        popup.style.display = 'flex';
+
+        // Lógica dos botões
+        const fecharEPrincipal = (resultado) => {
+            popup.style.display = 'none';
+            // Remove os listeners para não acumular
+            btnYes.removeEventListener('click', cliqueyese);
+            btnCancel.removeEventListener('click', cliquecancel);
+            resolve(resultado);
+        };
+
+        const cliqueyese = () => fecharEPrincipal(true);
+        const cliquecancel = () => fecharEPrincipal(false);
+
+        btnYes.addEventListener('click', cliqueyese);
+        btnCancel.addEventListener('click', cliquecancel);
+    });
+}
+
+        // ATENÇÃO: Adicione 'async' antes de function
+async function saveData() {
     const type = state.activeModalType;
     const coll = type === 'event' ? 'events' : 'ministries';
     let data;
@@ -1257,18 +1307,21 @@
         
         if (!t || !i || !c) return alert("Preencha campos com *");
 
-        // Formata a data para verificação
         const dataInput = tipoEvento === 'especial' 
             ? document.getElementById('f_data_especifica').value.split('-').reverse().join('/') 
             : document.getElementById('f_dia').value;
 
-        // --- TRAVA DE DUPLICIDADE PARA EVENTO ESPECIAL ---
+        // --- TRAVA DE DUPLICIDADE COM POPUP VISUAL ---
         if (tipoEvento === 'especial' && !state.editingId) {
             const conflito = state.events.find(e => e.dataEnsaio === dataInput && e.tipoEvento === 'especial');
             
             if (conflito) {
-                const confirmar = confirm(`Atenção: Já existe um evento especial marcado para o dia ${dataInput} (${conflito.titulo}).\n\nDeseja salvar este novo evento mesmo assim?`);
-                if (!confirmar) return; // Cancela a operação e mantém o modal aberto
+                // Prepara a mensagem bonita
+                const mensagemHtml = `Atenção: Já existe um <b>Evento Especial</b> marcado para o dia ${dataInput}.<br><br><b>${conflito.titulo}</b> (${conflito.nomeIgreja})<br><br>Deseja salvar este novo evento mesmo assim?`;
+                
+                // Espera a resposta do popup customizado
+                const confirmar = await mostrarPopupConfirmacao(mensagemHtml);
+                if (!confirmar) return; // Cancela
             }
         }
 
