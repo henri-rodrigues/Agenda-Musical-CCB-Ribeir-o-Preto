@@ -1245,42 +1245,70 @@
         }
 
         async function saveData() {
-            const type = state.activeModalType;
-            const coll = type === 'event' ? 'events' : 'ministries';
-            let data;
-            if (type === 'event') {
-                const t = document.getElementById('f_titulo').value;
-                const i = document.getElementById('f_igreja').value;
-                const c = document.getElementById('f_cidade').value;
-                if (!t || !i || !c) return alert("Preencha campos com *");
+    const type = state.activeModalType;
+    const coll = type === 'event' ? 'events' : 'ministries';
+    let data;
 
-                data = {
-                    titulo: t,
-                    nomeIgreja: i,
-                    cidadeEstado: c,
-                    dataEnsaio: document.getElementById('f_tipo').value === 'especial' ? document.getElementById('f_data_especifica').value.split('-').reverse().join('/') : document.getElementById('f_dia').value,
-                    horarioEnsaio: document.getElementById('f_hora').value,
-                    tipoEvento: document.getElementById('f_tipo').value,
-                    endereco: document.getElementById('f_end').value,
-                    obs: document.getElementById('f_obs').value,
-                    encRegional: document.getElementById('f_enc_regional').value || "",
-                    encLocal: document.getElementById('f_enc_local').value || "",
-                    examinadora: document.getElementById('f_examinadora').value || ""
-                };
-            } else {
-                data = {
-                    nome: document.getElementById('f_m_nome').value,
-                    cargo: document.getElementById('f_m_cargo').value,
-                    igreja: document.getElementById('f_m_igreja').value,
-                    cidade: document.getElementById('f_m_cidade').value,
-                    igrejasAtendidas: document.getElementById('f_m_igrejas_atendidas').value, // ALTERADO AQUI
-                    photo: document.getElementById('f_m_photo').value
-                };
+    if (type === 'event') {
+        const t = document.getElementById('f_titulo').value;
+        const i = document.getElementById('f_igreja').value;
+        const c = document.getElementById('f_cidade').value;
+        const tipoEvento = document.getElementById('f_tipo').value;
+        
+        if (!t || !i || !c) return alert("Preencha campos com *");
+
+        // Formata a data para verificação
+        const dataInput = tipoEvento === 'especial' 
+            ? document.getElementById('f_data_especifica').value.split('-').reverse().join('/') 
+            : document.getElementById('f_dia').value;
+
+        // --- TRAVA DE DUPLICIDADE PARA EVENTO ESPECIAL ---
+        if (tipoEvento === 'especial' && !state.editingId) {
+            const conflito = state.events.find(e => e.dataEnsaio === dataInput && e.tipoEvento === 'especial');
+            
+            if (conflito) {
+                const confirmar = confirm(`Atenção: Já existe um evento especial marcado para o dia ${dataInput} (${conflito.titulo}).\n\nDeseja salvar este novo evento mesmo assim?`);
+                if (!confirmar) return; // Cancela a operação e mantém o modal aberto
             }
-            if (state.editingId) await db.collection(coll).doc(state.editingId).update(data);
-            else await db.collection(coll).add(data);
-            closeModal();
         }
+
+        data = {
+            titulo: t,
+            nomeIgreja: i,
+            cidadeEstado: c,
+            dataEnsaio: dataInput,
+            horarioEnsaio: document.getElementById('f_hora').value,
+            tipoEvento: tipoEvento,
+            endereco: document.getElementById('f_end').value,
+            obs: document.getElementById('f_obs').value,
+            encRegional: document.getElementById('f_enc_regional').value || "",
+            encLocal: document.getElementById('f_enc_local').value || "",
+            examinadora: document.getElementById('f_examinadora').value || ""
+        };
+    } else {
+        // Lógica de Ministério (permanece igual)
+        data = {
+            nome: document.getElementById('f_m_nome').value,
+            cargo: document.getElementById('f_m_cargo').value,
+            igreja: document.getElementById('f_m_igreja').value,
+            cidade: document.getElementById('f_m_cidade').value,
+            igrejasAtendidas: document.getElementById('f_m_igrejas_atendidas').value,
+            photo: document.getElementById('f_m_photo').value
+        };
+    }
+
+    try {
+        if (state.editingId) {
+            await db.collection(coll).doc(state.editingId).update(data);
+        } else {
+            await db.collection(coll).add(data);
+        }
+        closeModal();
+    } catch (error) {
+        console.error("Erro ao salvar:", error);
+        alert("Erro ao salvar os dados.");
+    }
+}
 
 
         function formatarWhatsApp(tel) {
@@ -1306,29 +1334,63 @@
     }
 }
         function abrirIgrejasAtendidas(nome, igrejas) {
-    const listaIgrejas = igrejas ? igrejas.split(',') : [];
-    
+    if (!igrejas) return alert("Nenhuma igreja cadastrada para este ministério.");
+
+    // Se o texto contiver ":", vamos separar por cidades usando o ";"
+    // Exemplo esperado: "Ribeirão Preto: Simioni, Central; Sertãozinho: Centro"
+    let htmlGrupos = "";
+
+    if (igrejas.includes(':')) {
+        const blocosCidade = igrejas.split(';');
+        
+        blocosCidade.forEach(bloco => {
+            const [cidade, bairros] = bloco.split(':');
+            if (cidade && bairros) {
+                htmlGrupos += `
+                    <div style="text-align: left; margin-bottom: 15px; width: 100%;">
+                        <div style="font-size: 0.75rem; font-weight: 800; color: var(--p-dark); text-transform: uppercase; border-left: 3px solid var(--p-accent); padding-left: 8px; margin-bottom: 8px;">
+                            📍 ${cidade.trim()}
+                        </div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                            ${bairros.split(',').map(b => `
+                                <span style="background: #f8fafc; padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; border: 1px solid var(--p-border); color: var(--p-text);">
+                                    ${b.trim()}
+                                </span>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+        });
+    } else {
+        // Caso não tenha o padrão de cidades, mostra a lista simples (como era antes)
+        htmlGrupos = `
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
+                ${igrejas.split(',').map(i => `
+                    <span style="background: #f1f5f9; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; border: 1px solid var(--p-border);">
+                        🏛 ${i.trim()}
+                    </span>
+                `).join('')}
+            </div>
+        `;
+    }
+
     const modalHtml = `
         <div id="modalIgrejas" class="modal-overlay" style="display: flex; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 3000;">
-            <div class="modal" style="text-align: center; border-top: 6px solid var(--p-accent); animation: fadeUp 0.3s ease;">
-                <h3 style="font-family: 'Poppins'; color: var(--p-dark); margin-bottom: 5px;">Igrejas Atendidas</h3>
+            <div class="modal" style="text-align: center; border-top: 6px solid var(--p-accent); animation: fadeUp 0.3s ease; max-width: 350px;">
+                <h3 style="font-family: 'Poppins'; color: var(--p-dark); margin-bottom: 5px;">Cidades e Igrejas</h3>
                 <p style="color: var(--p-accent); font-weight: 600; margin-bottom: 20px; font-size: 0.9rem;">${nome}</p>
                 
-                <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 25px; max-height: 200px; overflow-y: auto; padding: 5px;">
-                    ${listaIgrejas.length > 0 ? listaIgrejas.map(i => `
-                        <span style="background: #f1f5f9; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; border: 1px solid var(--p-border); font-weight: 500;">
-                            🏛 ${i.trim()}
-                        </span>
-                    `).join('') : '<p style="font-size:0.8rem; color: #94a3b8;">Nenhuma igreja listada.</p>'}
+                <div style="max-height: 350px; overflow-y: auto; padding-right: 5px;">
+                    ${htmlGrupos}
                 </div>
 
-                <button class="btn-ui btn-primary" onclick="document.getElementById('modalIgrejas').remove()" style="width: 100%; height: 45px;">Fechar</button>
+                <button class="btn-ui btn-primary" onclick="document.getElementById('modalIgrejas').remove()" style="width: 100%; height: 45px; margin-top: 20px;">Fechar</button>
             </div>
         </div>
     `;
     document.body.insertAdjacentHTML('beforeend', modalHtml);
 }
-
         window.onload = () => {
             // Código para gerenciar atualização automática de cache (PWA)
             if ('serviceWorker' in navigator) {
