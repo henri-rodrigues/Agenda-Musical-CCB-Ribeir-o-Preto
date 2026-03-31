@@ -1087,7 +1087,7 @@
             </div>
             <div class="card-actions">
                 <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.endereco + ', ' + e.cidadeEstado)}" target="_blank" class="btn-card bg-maps">Maps</a>
-                <a href="https://waze.com/ul?q=${encodeURIComponent(e.endereco + ', ' + e.cidadeEstado)}" target="_blank" class="btn-card bg-waze">Waze</a>
+                <a href="https://waze.com/ul?q=${encodeURIComponent(e.endereco + ', ' + e.cidadeEstado)}&navigate=yes" target="_blank" class="btn-card bg-waze">Waze</a>
                 <a href="${gerarLinkCalendario(e)}" target="_blank" class="btn-card bg-calendar">Agenda</a>
                 <button onclick="compartilharEvento('${e.titulo}', '${e.nomeIgreja}', '${e.dataEnsaio}', '${e.horarioEnsaio}', '${e.endereco}')" class="btn-card bg-share">Enviar</button>
             </div>
