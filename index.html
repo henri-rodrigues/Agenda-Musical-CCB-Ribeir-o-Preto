@@ -621,7 +621,7 @@
                 <h3 style="margin-bottom: 1.5rem; text-align: center;">Acesso ao Sistema</h3>
                 <input type="text" id="auth_user" class="search-input" placeholder="Usuário">
                 <input type="password" id="auth_pass" class="search-input" placeholder="Senha">
-                <button class="btn-ui btn-primary" style="width: 100%;" onclick="processAuth()">Entrar</button>
+                <button class="btn-ui btn-primary" style="width: 100%;" onclick="()">Entrar</button>
             </div>
         </section>
 
@@ -1196,6 +1196,52 @@
                 location.reload();
             } else alert("Incorreto");
         }
+
+        async function adminCreateUser() {
+    const u = document.getElementById('reg_user').value.trim();
+    const p = document.getElementById('reg_pass').value.trim();
+
+    if (!u || !p) {
+        return alert("Por favor, preencha o usuário e a senha.");
+    }
+
+    // Verifica se o usuário já existe no estado local para evitar duplicados
+    const usuarioExiste = state.users.find(user => user.user === u);
+    if (usuarioExiste) {
+        return alert("Este nome de usuário já está sendo usado.");
+    }
+
+    try {
+        await db.collection("users").add({
+            user: u,
+            pass: p,
+            role: 'editor', // Por padrão, novos usuários são editores
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        alert("Usuário criado com sucesso!");
+        
+        // Limpa os campos
+        document.getElementById('reg_user').value = "";
+        document.getElementById('reg_pass').value = "";
+        
+        // A tabela de usuários será atualizada automaticamente pelo startSync()
+    } catch (e) {
+        console.error("Erro ao criar usuário:", e);
+        alert("Erro ao salvar no banco de dados.");
+    }
+}
+
+        async function deleteUser(id) {
+    if (confirm("Tem certeza que deseja excluir este acesso?")) {
+        try {
+            await db.collection("users").doc(id).delete();
+            // O startSync() vai detectar a remoção e atualizar a tela sozinho
+        } catch (e) {
+            alert("Erro ao excluir usuário.");
+        }
+    }
+}
 
         function renderAdmin() {
             if (!state.currentUser || state.currentUser.role !== 'admin') return;
