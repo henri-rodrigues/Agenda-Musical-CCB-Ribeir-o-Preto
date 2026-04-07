@@ -1255,12 +1255,12 @@
             const cityEv = document.getElementById('filterCidadeEvent');
             if (state.events.length > 0) {
                 const evCities = [...new Set(state.events.map(e => e.cidadeEstado))].sort();
-                cityEv.innerHTML = '<option value="">📍 Selecionar Cidade</option>' + evCities.map(c => `<option value="${c}">${c}</option>`).join('');
+                cityEv.innerHTML = '<option value="">📍 Cidade</option>' + evCities.map(c => `<option value="${c}">${c}</option>`).join('');
             }
             const minCities = [...new Set(state.ministries.map(m => m.cidade))].sort();
             document.getElementById('filterCidadeMin').innerHTML = '<option value="">📍 Filtrar por Cidade</option>' + minCities.map(c => `<option value="${c}">${c}</option>`).join('');
             document.getElementById('f_dia').innerHTML = DIAS_LIST.map(d => `<option value="${d}">${d}</option>`).join('');
-            document.getElementById('filterDiaEvent').innerHTML = '<option value="">📅 Todos os Dias</option>' + DIAS_LIST.map(d => `<option value="${d}">${d}</option>`).join('');
+            document.getElementById('filterDiaEvent').innerHTML = '<option value="">📅 Dias</option>' + DIAS_LIST.map(d => `<option value="${d}">${d}</option>`).join('');
         }
 
         function openModal(type, id = null) {
