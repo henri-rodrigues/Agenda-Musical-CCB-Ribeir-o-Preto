@@ -1,4 +1,4 @@
-const CACHE_NAME = 'agenda-musical-v15';
+const CACHE_NAME = 'agenda-musical-v16';
 
 // Arquivos que serão salvos no celular do usuário
 const assets = [
